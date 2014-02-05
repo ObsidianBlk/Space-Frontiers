@@ -1,0 +1,27 @@
+set(engine_source_files
+    Application.cpp
+    Application.h
+    EventListener.cpp
+    EventListener.h
+    EventManager.cpp
+    EventManager.h
+    GameStateManager.cpp
+    GameStateManager.h
+    RandomGenerator.cpp
+    RandomGenerator.h
+    Resource.cpp
+    Resource.h
+    Texture.cpp
+    Texture.h
+    TextureManager.cpp
+    TextureManager.h
+    Window.cpp
+    Window.h
+    WindowManager.cpp
+    WindowManager.h
+    Renderables.h
+    Updateables.h
+    States.h
+    StateManager.h
+)
+add_library(engine ${engine_source_files})
