@@ -26,7 +26,8 @@
 
 
 Application::Application(){
-    mRunning = false;
+    // While we create the GameStateManager in the Application class, only decendants can access and push a state to it.
+    mGameStateManager = GameStateManagerPtr(new GameStateManager());
 }
 
 Application::~Application()
@@ -35,8 +36,22 @@ Application::~Application()
     //atexit(SDL_Quit);
 }
 
-void Application::run(){}
+void Application::run(){
+    while (not mGameStateManager->empty()){
+        mGameStateManager->update();
+        mGameStateManager->render();
+    }
+}
 
+GameStateManagerWPtr Application::getGameStateManager(){
+    if (mGameStateManager.get() != 0){
+        return GameStateManagerWPtr(mGameStateManager);
+    }
+    return GameStateManagerWPtr();
+}
+
+
+// This is soon to DIE!
 void Application::poll(){
     // message processing loop
     SDL_Event event;
@@ -47,7 +62,9 @@ void Application::poll(){
         {
             // exit if the window is closed
         case SDL_QUIT:
-            mRunning = false;
+            if (mGameStateManager.get() != 0){
+                mGameStateManager->clear();
+            }
             break;
 
             // check for keypresses
@@ -55,20 +72,13 @@ void Application::poll(){
             {
                 // exit if ESCAPE is pressed
                 if (event.key.keysym.sym == SDLK_ESCAPE)
-                    mRunning = false;
+                    if (mGameStateManager.get() != 0){
+                        mGameStateManager->clear();
+                    }
                 break;
             }
         } // end switch
     } // end of message processing
-}
-
-WindowWPtr Application::createWindow(std::string wname, std::string title, int x, int y, int w, int h, Uint32 wflags, Uint32 rflags){
-    if (mWindows.find(wname) == mWindows.end()){
-        WindowPtr win(new Window(title, x, y, w, h, wflags, rflags));
-        mWindows.insert(std::pair<std::string, WindowPtr>(wname, win));
-        return WindowWPtr(win);
-    }
-    return WindowWPtr();
 }
 
 

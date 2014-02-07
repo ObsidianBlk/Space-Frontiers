@@ -43,6 +43,7 @@ class IStateManager
 
         virtual StatePtr currentState()=0;
 
+        virtual void clear()=0;
         virtual bool empty()=0;
         virtual unsigned int size()=0;
 

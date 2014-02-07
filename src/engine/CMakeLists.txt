@@ -1,6 +1,4 @@
 set(engine_source_files
-    Application.cpp
-    Application.h
     EventListener.cpp
     EventListener.h
     EventManager.cpp

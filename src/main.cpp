@@ -23,13 +23,9 @@
 */
 
 
-#include "engine/Application.h"
-#include "engine/Window.h"
-#include "engine/WindowManager.h"
-#include "engine/Texture.h"
-#include "engine/TextureManager.h"
+#include "Application.h"
 
-class SDLApp : public Application{
+/*class SDLApp : public Application{
 public:
     SDLApp(){
         mTextureManager = TextureManager::getInstance();
@@ -55,7 +51,7 @@ public:
         }
 
         win->setDrawColor(255, 128, 64);
-        while (mRunning){
+        while (this->isRunning()){
             poll();
             win->clear();
             t->draw(0, 0);
@@ -67,14 +63,19 @@ public:
 protected:
     TextureManager* mTextureManager;
     WindowManager* mWindowManager;
-};
+};*/
 
 
 int main ( int argc, char** argv )
 {
     int success = 0;
-    SDLApp* app = new SDLApp();
+    /*SDLApp* app = new SDLApp();
+    app->run();*/
+
+    Application *app = new Application();
+    // Need to add a game state here, or this next line will simply exit the appplication for all the fun that'll do me!
     app->run();
+
     // all is well ;)
     printf("Exited cleanly\n");
 

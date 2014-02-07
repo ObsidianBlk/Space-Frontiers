@@ -26,10 +26,17 @@
 */
 
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+
 #include "StateManager.h"
 #include "Updateables.h"
 #include "Renderables.h"
 #include "States.h"
+
+class GameStateManager;
+typedef boost::shared_ptr<GameStateManager> GameStateManagerPtr;
+typedef boost::weak_ptr<GameStateManager> GameStateManagerWPtr;
 
 class GameStateManager : public IStateManager, public IUpdateable, public IRenderable
 {
@@ -64,6 +71,11 @@ class GameStateManager : public IStateManager, public IUpdateable, public IRende
         * Returns pointer to the current state on the state stack.
         */
         StatePtr currentState();
+
+        /**
+        * This removes ALL of the states from the State Manager.
+        */
+        void clear();
 
         /**
         * Returns true if there are no states on the stack and false otherwise.

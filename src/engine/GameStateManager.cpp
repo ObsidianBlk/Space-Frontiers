@@ -28,9 +28,7 @@ GameStateManager::GameStateManager(){}
 
 GameStateManager::~GameStateManager()
 {
-    while (!mStateStack.empty()){
-        dropState();
-    }
+    clear();
 }
 
 
@@ -70,6 +68,13 @@ StatePtr GameStateManager::currentState(){
         return mStateStack.at(mStateStack.size()-1);
     }
     return StatePtr();
+}
+
+
+void GameStateManager::clear(){
+    while (!mStateStack.empty()){
+        dropState();
+    }
 }
 
 

@@ -32,28 +32,27 @@
     #include <stdlib.h>
 #endif
 
-#include <string>
-#include <map>
+//#include <string>
+//#include <map>
 
 #include <SDL2/SDL.h>
 //#include <SDL2/SDL_image.h>
 
-#include "Window.h"
+#include "engine/GameStateManager.h"
 
 
 class Application
 {
     public:
         Application();
-        virtual ~Application();
-        virtual void run();
+        ~Application();
+        void run();
+        GameStateManagerWPtr getGameStateManager();
 
     protected:
-        typedef std::map<std::string, WindowPtr> WindowMap;
-        WindowMap mWindows;
-        bool mRunning;
+        GameStateManagerPtr mGameStateManager;
 
-        WindowWPtr createWindow(std::string wname, std::string title, int x, int y, int w, int h, Uint32 wflags=0, Uint32 rflags=SDL_RENDERER_ACCELERATED);
+        // NOTE: This method will die doon!
         void poll();
     private:
 };
