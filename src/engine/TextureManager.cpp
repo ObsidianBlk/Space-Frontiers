@@ -24,6 +24,11 @@
 
 #include "TextureManager.h"
 
+
+namespace engine{
+
+
+
 TextureManager* TextureManager::mInstance = nullptr;
 
 TextureManager::TextureManager() : ResourceManager<TexturePtr, TextureWPtr>(){
@@ -51,3 +56,7 @@ TextureWPtr TextureManager::addTexture(std::string name, std::string uri, Window
     }
     return TextureWPtr();
 }
+
+
+
+} // End namespace "engine"

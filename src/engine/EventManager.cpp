@@ -24,6 +24,9 @@
 
 #include "EventManager.h"
 
+namespace engine{
+
+
 EventManagerPtr EventManager::mInstance;
 
 EventManager::EventManager(){}
@@ -88,6 +91,10 @@ boost::signals2::connection EventManager::Subscribe(const std::string &eventName
     }
     return mEventSignalMap[eventName]->connect(fn);
 }
+
+
+
+} // End namespace "engine"
 
 
 

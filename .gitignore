@@ -1,6 +1,7 @@
 bin/*
 obj/*
 build/**
+assets/**
 *.cbp
 *.depend
 GameIdeas.txt

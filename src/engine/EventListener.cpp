@@ -24,6 +24,8 @@
 
 #include "EventListener.h"
 
+namespace engine{
+
 EventListener::EventListener(){
     mEventManager = EventManager::getInstance();
 }
@@ -37,3 +39,5 @@ EventListener::~EventListener(){
 void EventListener::ListenHandler(const std::string &name, const HandlerFunction &fnHandler){
     mListenerConnections.push_back(mEventManager->Subscribe(name, fnHandler));
 }
+
+} // End namespace "engine"

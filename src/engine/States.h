@@ -28,6 +28,8 @@
 #include <boost/shared_ptr.hpp>
 //#include <boost/weak_ptr.hpp>
 
+namespace engine{
+
 
 class IState{
 public:
@@ -38,10 +40,13 @@ public:
     virtual void looseFocus()=0;
 
 protected:
-    IState();
+    IState(){}
 };
 typedef boost::shared_ptr<IState> StatePtr;
 
+
+
+} // End namespace "engine"
 
 #endif // STATE_H
 

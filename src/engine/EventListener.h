@@ -40,6 +40,9 @@
 
 #include "EventManager.h"
 
+namespace engine{
+
+
 class EventListener
 {
     public:
@@ -54,5 +57,7 @@ class EventListener
         std::vector<boost::signals2::connection> mListenerConnections;
 };
 
+
+} // End namespace "engine"
 
 #endif // EVENTLISTENER_H

@@ -25,6 +25,9 @@
 #include "Texture.h"
 
 
+namespace engine{
+
+
 Texture::~Texture(){}
 
 Texture::Texture(std::string uri, WindowWPtr win) : Resource(uri){
@@ -122,6 +125,8 @@ void Texture::LoadTexture(){
 }
 
 
+
+} // End namespace "engine"
 
 
 

@@ -24,6 +24,11 @@
 
 #include "WindowManager.h"
 
+
+namespace engine{
+
+
+
 WindowManager* WindowManager::mInstance = nullptr;
 
 WindowManager::WindowManager() : ResourceManager<WindowPtr, WindowWPtr>(){}
@@ -41,5 +46,11 @@ WindowWPtr WindowManager::createWindow(std::string wname, std::string title, int
         mResources.insert(std::pair<std::string, WindowPtr>(wname, win));
         return WindowWPtr(win);
     }
-    return WindowWPtr();
+    throw std::runtime_error(std::string("Cannot create Window named \"") + wname + std::string("\". Window already exists."));
 }
+
+
+
+} // End namespace "engine"
+
+

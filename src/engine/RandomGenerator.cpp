@@ -25,6 +25,10 @@
 
 #include "RandomGenerator.h"
 
+namespace engine{
+
+
+
 RandomGenerator::RandomGenerator()
 {
     mIndex = 0;
@@ -90,6 +94,10 @@ int RandomGenerator::randRange(int min, int max){
     int value=(int)(randFloat()*range);
     return min+value;
 }
+
+
+
+} // End namespace "engine"
 
 
 

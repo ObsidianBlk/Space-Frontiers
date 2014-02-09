@@ -26,6 +26,9 @@
 */
 
 
+namespace engine{
+
+
 /**
 * Interface class for all objects that update via the system's recurring loop.
 */
@@ -36,5 +39,7 @@ protected:
     IUpdateable(){}
 };
 
+
+} // End namespace "engine"
 
 #endif // UPDATEABLE_H

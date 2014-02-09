@@ -33,6 +33,8 @@
 #endif
 
 
+namespace engine{
+
 /*
 * Random number generation, using the WELL algorithm by F. Panneton, P. L'Ecuyer and M. Matsumoto.
 *
@@ -67,5 +69,7 @@ private:
     unsigned int mState[16];
     unsigned int mIndex;
 };
+
+} // End namespace "engine"
 
 #endif // RANDOMGENERATOR_H

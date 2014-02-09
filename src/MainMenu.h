@@ -1,3 +1,6 @@
+#ifndef MAINMENU_H
+#define MAINMENU_H
+
 /*
 * The MIT License (MIT)
 *
@@ -22,33 +25,48 @@
 * THE SOFTWARE.
 */
 
-#include "Application.h"
+#include <string>
+
+#include <SDL2/SDL.h>
+
+#include "engine/States.h"
+#include "engine/Updateables.h"
+#include "engine/Renderables.h"
+#include "engine/GameStateManager.h"
+#include "engine/WindowManager.h"
+#include "engine/TextureManager.h"
 
 
-Application::Application(){
-    // While we create the GameStateManager in the Application class, only decendants can access and push a state to it.
-    mGameStateManager = engine::GameStateManagerPtr(new engine::GameStateManager());
-}
-
-Application::~Application()
+class MainMenu : public engine::IState, public engine::IUpdateable, public engine::IRenderable
 {
-    // make sure SDL cleans up before exit
-    //atexit(SDL_Quit);
-}
+    public:
+        MainMenu(engine::GameStateManagerWPtr gsm);
+        ~MainMenu();
 
-void Application::run(){
-    while (not mGameStateManager->empty()){
-        mGameStateManager->update();
-        mGameStateManager->render();
-    }
-}
+        void start();
+        void stop();
 
-engine::GameStateManagerWPtr Application::getGameStateManager(){
-    if (mGameStateManager.get() != 0){
-        return engine::GameStateManagerWPtr(mGameStateManager);
-    }
-    return engine::GameStateManagerWPtr();
-}
+        void getFocus();
+        void looseFocus();
+
+        void update();
+        void render();
+
+    private:
+        // NOTE: These constants are temporary.
+        static const std::string WINDOW_RESOURCE_NAME;
+        static const std::string WINDOW_RESOURCE_TITLE;
+        static const std::string TEXTURE_BACKGROUND_NAME;
 
 
+        engine::GameStateManagerWPtr mGameStateManager;
+        engine::WindowWPtr mWindow;
+        engine::TextureWPtr mTexBackground;
+        bool mHasFocus;
 
+
+        // NOTE: This method will die doon!
+        void poll(engine::GameStateManagerPtr &gsm);
+};
+
+#endif // MAINMENU_H

@@ -32,12 +32,6 @@
     #include <stdlib.h>
 #endif
 
-//#include <string>
-//#include <map>
-
-#include <SDL2/SDL.h>
-//#include <SDL2/SDL_image.h>
-
 #include "engine/GameStateManager.h"
 
 
@@ -47,13 +41,10 @@ class Application
         Application();
         ~Application();
         void run();
-        GameStateManagerWPtr getGameStateManager();
+        engine::GameStateManagerWPtr getGameStateManager();
 
     protected:
-        GameStateManagerPtr mGameStateManager;
-
-        // NOTE: This method will die doon!
-        void poll();
+        engine::GameStateManagerPtr mGameStateManager;
     private:
 };
 

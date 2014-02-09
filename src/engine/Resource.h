@@ -27,6 +27,10 @@
 
 #include <string>
 
+
+namespace engine{
+
+
 class Resource
 {
     public:
@@ -42,5 +46,8 @@ class Resource
         virtual bool resourceExists(std::string uri);
     private:
 };
+
+
+} // End namespace "engine"
 
 #endif // RESOURCE_H

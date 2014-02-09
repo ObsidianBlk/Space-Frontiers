@@ -29,6 +29,9 @@
 //SDL_Rect Window::mScreenRect;
 
 
+namespace engine{
+
+
 
 Window::Window(std::string title, int x, int y, int w, int h, Uint32 wflags, Uint32 rflags){
     //mWindow = SDL_WindowPtr(nullptr, SDL_DestroyWindow);
@@ -90,6 +93,6 @@ SDL_RendererWPtr Window::getSDLRenderer(){
 
 
 
-
+} // End namespace "engine"
 
 

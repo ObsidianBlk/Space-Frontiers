@@ -26,6 +26,9 @@
 */
 
 
+namespace engine{
+
+
 /**
 * Interface class for all objects that can be rendered or do rendering operations to a display.
 */
@@ -36,6 +39,8 @@ protected:
     IRenderable(){}
 };
 
+
+} // End namespace "engine"
 
 #endif // RENDERABLE_H
 

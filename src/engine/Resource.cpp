@@ -27,6 +27,11 @@
 #include <stdexcept>
 #include <cstdio>
 
+
+namespace engine{
+
+
+
 Resource::Resource(std::string uri){
     if (!resourceExists(uri)){
         throw std::runtime_error("Resource doesn't exist.");
@@ -46,3 +51,6 @@ bool Resource::resourceExists(std::string uri){
     }
     return false;
 }
+
+
+} // End namespace "engine"

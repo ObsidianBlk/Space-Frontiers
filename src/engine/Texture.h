@@ -34,6 +34,8 @@
 #include "Window.h"
 #include "Resource.h"
 
+namespace engine{
+
 
 typedef boost::shared_ptr<SDL_Surface> SDL_SurfacePtr;
 typedef boost::weak_ptr<SDL_Surface> SDL_SurfaceWPtr;
@@ -72,6 +74,7 @@ class Texture : public Resource
 };
 
 
+} // End namespace "engine"
 
 #endif // TEXTURE_H
 

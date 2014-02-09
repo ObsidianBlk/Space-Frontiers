@@ -42,6 +42,8 @@
 
 //#include "EventDict.h"
 
+namespace engine{
+
 /** \typedef
 * \brief A std::map type.
 *
@@ -131,4 +133,6 @@ class EventManager{
         EventManager();
 };
 
+
+} // End namespace "engine"
 #endif // EVENTMANAGER_H

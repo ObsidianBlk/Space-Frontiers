@@ -24,6 +24,11 @@
 
 #include "GameStateManager.h"
 
+
+namespace engine{
+
+
+
 GameStateManager::GameStateManager(){}
 
 GameStateManager::~GameStateManager()
@@ -32,7 +37,7 @@ GameStateManager::~GameStateManager()
 }
 
 
-void GameStateManager::addState(StatePtr &s){
+void GameStateManager::addState(StatePtr s){
     StatePtr cstate = currentState();
     if (cstate.get() != 0){
         cstate->looseFocus();
@@ -42,14 +47,14 @@ void GameStateManager::addState(StatePtr &s){
     s->start();
 }
 
-void GameStateManager::swapState(StatePtr &s){
+void GameStateManager::swapState(StatePtr s){
     if (!mStateStack.empty()){
         dropState();
     }
     addState(s);
 }
 
-void GameStateManager::elevateState(StatePtr &s){
+void GameStateManager::elevateState(StatePtr s){
     RemoveFromStack(s); // If s is not already on the stack, this does nothing.
     RebuildUpdateablesAndRenderables();
     addState(s);
@@ -147,5 +152,9 @@ void GameStateManager::RebuildUpdateablesAndRenderables(){
     }
 }
 
+
+
+
+} // End namespace "engine"
 
 

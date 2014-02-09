@@ -34,6 +34,8 @@
 #include "Renderables.h"
 #include "States.h"
 
+namespace engine{
+
 class GameStateManager;
 typedef boost::shared_ptr<GameStateManager> GameStateManagerPtr;
 typedef boost::weak_ptr<GameStateManager> GameStateManagerWPtr;
@@ -48,19 +50,19 @@ class GameStateManager : public IStateManager, public IUpdateable, public IRende
         * Adds the given state to the head of the state stack. If other states exist, the current state is notified it is loosing focus and the given state is notified it now has
         & primary focus.
         */
-        void addState(StatePtr &s);
+        void addState(StatePtr s);
 
         /**
         * Replaces the current state with the given state, removing the current state from the stack.
         * If there are no states on the stack, this has the same effect as addState.
         */
-        void swapState(StatePtr &s);
+        void swapState(StatePtr s);
 
         /**
         * Removes the given state from the stack and readds it as the current state.
         * If the given state is not already on the stack, this has the same effect as addState
         */
-        void elevateState(StatePtr &s);
+        void elevateState(StatePtr s);
 
         /**
         * Removes the current state from the stack and reports to the state just below (if there is one) that it now has primary focus.
@@ -110,5 +112,7 @@ class GameStateManager : public IStateManager, public IUpdateable, public IRende
         void DropUpdateableOrRenderable(IState* state);
         void RebuildUpdateablesAndRenderables();
 };
+
+} // End namespace "engine"
 
 #endif // GAMESTATEMANAGER_H

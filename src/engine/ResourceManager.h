@@ -28,6 +28,9 @@
 #include <string>
 #include <map>
 
+namespace engine{
+
+
 template <typename T, typename H>
 /**
 * The base resource management class for all future resource managers.
@@ -72,5 +75,8 @@ class ResourceManager
         typedef typename ResourceMap::iterator ResourceMapIter;
         ResourceMap mResources;
 };
+
+
+} // End namespace "engine"
 
 #endif // RESOURCEMANAGER_H

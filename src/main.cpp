@@ -24,6 +24,7 @@
 
 
 #include "Application.h"
+#include "MainMenu.h"
 
 /*class SDLApp : public Application{
 public:
@@ -73,7 +74,7 @@ int main ( int argc, char** argv )
     app->run();*/
 
     Application *app = new Application();
-    // Need to add a game state here, or this next line will simply exit the appplication for all the fun that'll do me!
+    new MainMenu(app->getGameStateManager()); // I shouldn't need to store this in a variable, as the MainMenu constructor stores the object into the given GameStateManager.
     app->run();
 
     // all is well ;)

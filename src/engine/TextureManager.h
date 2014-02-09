@@ -33,6 +33,9 @@
 #include "ResourceManager.h"
 
 
+namespace engine{
+
+
 class TextureManager : public ResourceManager<TexturePtr, TextureWPtr>
 {
     public:
@@ -45,5 +48,8 @@ class TextureManager : public ResourceManager<TexturePtr, TextureWPtr>
 
         TextureManager();
 };
+
+
+} // End namespace "engine"
 
 #endif // TEXTUREMANAGER_H

@@ -33,6 +33,10 @@
 
 #include <SDL2/SDL.h>
 
+
+namespace engine{
+
+
 typedef boost::shared_ptr<SDL_Window> SDL_WindowPtr;
 typedef boost::weak_ptr<SDL_Window> SDL_WindowWPtr;
 typedef boost::shared_ptr<SDL_Renderer> SDL_RendererPtr;
@@ -68,6 +72,7 @@ class Window
 typedef boost::shared_ptr<Window> WindowPtr;
 typedef boost::weak_ptr<Window> WindowWPtr;
 
+} // End namespace "engine"
 
 
 #endif // WINDOW_H

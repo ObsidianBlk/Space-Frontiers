@@ -33,12 +33,15 @@
 #include "States.h"
 
 
+namespace engine{
+
+
 class IStateManager
 {
     public:
-        virtual void addState(StatePtr &s)=0;
-        virtual void swapState(StatePtr &s)=0;
-        virtual void elevateState(StatePtr &s)=0;
+        virtual void addState(StatePtr s)=0;
+        virtual void swapState(StatePtr s)=0;
+        virtual void elevateState(StatePtr s)=0;
         virtual void dropState()=0;
 
         virtual StatePtr currentState()=0;
@@ -51,5 +54,8 @@ class IStateManager
         IStateManager(){}
     private:
 };
+
+
+} // End namespace "engine"
 
 #endif // STATEMANAGER_H
