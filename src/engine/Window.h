@@ -27,9 +27,7 @@
 */
 
 #include <string>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <memory>
 
 #include <SDL2/SDL.h>
 
@@ -37,10 +35,10 @@
 namespace engine{
 
 
-typedef boost::shared_ptr<SDL_Window> SDL_WindowPtr;
-typedef boost::weak_ptr<SDL_Window> SDL_WindowWPtr;
-typedef boost::shared_ptr<SDL_Renderer> SDL_RendererPtr;
-typedef boost::weak_ptr<SDL_Renderer> SDL_RendererWPtr;
+typedef std::shared_ptr<SDL_Window> SDL_WindowPtr;
+typedef std::weak_ptr<SDL_Window> SDL_WindowWPtr;
+typedef std::shared_ptr<SDL_Renderer> SDL_RendererPtr;
+typedef std::weak_ptr<SDL_Renderer> SDL_RendererWPtr;
 
 
 class Window
@@ -69,8 +67,8 @@ class Window
         SDL_Rect            mScreenRect;
     private:
 };
-typedef boost::shared_ptr<Window> WindowPtr;
-typedef boost::weak_ptr<Window> WindowWPtr;
+typedef std::shared_ptr<Window> WindowPtr;
+typedef std::weak_ptr<Window> WindowWPtr;
 
 } // End namespace "engine"
 

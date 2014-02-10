@@ -1,5 +1,5 @@
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef HANDLER_H
+#define HANDLER_H
 
 /*
 * The MIT License (MIT)
@@ -25,58 +25,42 @@
 * THE SOFTWARE.
 */
 
+
 #include <memory>
-//#include <boost/shared_ptr.hpp>
-//#include <boost/weak_ptr.hpp>
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-
-#include "Window.h"
-#include "Resource.h"
-
-namespace engine{
 
 
-typedef std::shared_ptr<SDL_Surface> SDL_SurfacePtr;
-typedef std::weak_ptr<SDL_Surface> SDL_SurfaceWPtr;
-typedef std::shared_ptr<SDL_Texture> SDL_TexturePtr;
-typedef std::weak_ptr<SDL_Texture> SDL_TextureWPtr;
+namespace engine {
 
-class Texture;
-typedef std::shared_ptr<Texture> TexturePtr;
-typedef std::weak_ptr<Texture> TextureWPtr;
-
-
-class Texture : public Resource
-{
+    template<typename T>
+    class Handler{
     public:
-        Texture(std::string uri, WindowWPtr win);
-        //Texture(TextureWPtr tex, WindowWPtr win);
-        ~Texture();
+        Handler(){mRef = std::weak_ptr<T>();}
+        Handler(std::weak_ptr<T> ptr){mRef = ptr;}
+        Handler(std::shared_ptr<T> ptr){mRef = std::weak_ptr<T>(ptr);}
 
-        bool prepare();
-        void release();
-        bool isPrepared();
+        bool IsValid(){return mRef.lock().get() != 0;}
 
-        WindowWPtr getWindow();
-        void setWindow(WindowWPtr win);
+        std::shared_ptr<T> operator->(){return mRef.lock();}
+        const std::shared_ptr<T> operator->(){return mRef.lock();}
 
-        void getTextureBounds(int *width, int *height);
+        inline bool operator==(const Handler<T> lhs, const Handler<T> rhs){
+            return lhs.getReference().lock().get() == rhs.getReference().lock().get();
+        }
+        inline bool operator!=(const Handler<T> lhs, const Handler<T> rhs){return !operator==(lhs, rhs);}
 
-        void draw(int x, int y, SDL_Rect* clip=nullptr);
 
     protected:
-        SDL_TexturePtr mTexture;
-        WindowWPtr mTexWindow;
 
-        void LoadTexture();
+        std::weak_ptr<T> GetReference(){return mRef;}
+        void SetReference(std::weak_ptr<T> ptr){mRef = ptr;}
+        void SetReference(std::shared_ptr<T> ptr){mRef = std::weak_ptr<T>(ptr);}
+
+
     private:
-};
+        std::weak_ptr<T> mRef;
+    };
 
 
-} // End namespace "engine"
+}
 
-#endif // TEXTURE_H
-
-
+#endif // HANDLER_H

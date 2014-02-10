@@ -25,7 +25,7 @@
 * THE SOFTWARE.
 */
 
-
+#include <memory>
 #include <vector>
 #include <string>
 #include <map>
@@ -55,9 +55,9 @@ typedef std::map<const std::string, boost::any> EventDict;
 // I prequality the name so as to create the typedef.
 class EventManager;
 /** \typedef
-* \brief boost::shared_ptr<EventManager>
+* \brief std::shared_ptr<EventManager>
 */
-typedef boost::shared_ptr<EventManager> EventManagerPtr;
+typedef std::shared_ptr<EventManager> EventManagerPtr;
 
 /** \class
 * \brief [SINGLETON] Primary event manager.
@@ -125,7 +125,7 @@ class EventManager{
         boost::recursive_mutex mManagerProtection;
 
         typedef boost::signals2::signal<SignalSignature> EventSignal;
-        typedef boost::shared_ptr<EventSignal> EventSignalPtr;
+        typedef std::shared_ptr<EventSignal> EventSignalPtr;
         typedef std::map<std::string, EventSignalPtr> EventSignalMap;
         EventSignalMap mEventSignalMap;
 

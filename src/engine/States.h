@@ -25,7 +25,8 @@
 * THE SOFTWARE.
 */
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
+//#include <boost/shared_ptr.hpp>
 //#include <boost/weak_ptr.hpp>
 
 namespace engine{
@@ -42,7 +43,7 @@ public:
 protected:
     IState(){}
 };
-typedef boost::shared_ptr<IState> StatePtr;
+typedef std::shared_ptr<IState> StatePtr;
 
 
 
