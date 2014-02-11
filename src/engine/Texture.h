@@ -51,7 +51,7 @@ typedef std::weak_ptr<Texture> TextureWPtr;
 class Texture : public Resource
 {
     public:
-        Texture(std::string uri, WindowWPtr win);
+        Texture(std::string uri, WindowHnd win);
         //Texture(TextureWPtr tex, WindowWPtr win);
         ~Texture();
 
@@ -59,8 +59,8 @@ class Texture : public Resource
         void release();
         bool isPrepared();
 
-        WindowWPtr getWindow();
-        void setWindow(WindowWPtr win);
+        WindowHnd getWindow();
+        void setWindow(WindowHnd win);
 
         void getTextureBounds(int *width, int *height);
 
@@ -68,7 +68,7 @@ class Texture : public Resource
 
     protected:
         SDL_TexturePtr mTexture;
-        WindowWPtr mTexWindow;
+        WindowHnd mTexWindow;
 
         void LoadTexture();
     private:

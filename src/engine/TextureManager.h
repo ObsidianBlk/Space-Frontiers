@@ -39,7 +39,7 @@ namespace engine{
 class TextureManager : public ResourceManager<TexturePtr, TextureWPtr>
 {
     public:
-        TextureWPtr addTexture(std::string name, std::string uri, WindowWPtr win, bool allowOverwrite = false);
+        TextureWPtr addTexture(std::string name, std::string uri, WindowHnd win, bool allowOverwrite = false);
 
         static TextureManager* getInstance();
 

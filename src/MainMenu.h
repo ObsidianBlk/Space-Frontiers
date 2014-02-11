@@ -60,7 +60,7 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
 
 
         engine::GameStateManagerWPtr mGameStateManager;
-        engine::WindowWPtr mWindow;
+        engine::WindowHnd mWindow;
         engine::TextureWPtr mTexBackground;
         bool mHasFocus;
 

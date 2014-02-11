@@ -30,10 +30,10 @@ namespace engine{
 
 Texture::~Texture(){}
 
-Texture::Texture(std::string uri, WindowWPtr win) : Resource(uri){
+Texture::Texture(std::string uri, WindowHnd win) : Resource(uri){
     mTexture = SDL_TexturePtr();
 
-    if (win.lock().get() == 0){
+    if (!win.IsValid()){
         throw std::runtime_error("Cannot Create Texture: Window pointer invalid.");
     }
     mTexWindow = win;
@@ -51,7 +51,7 @@ bool Texture::prepare(){
             // Print error
             return false;
         }
-    } else if (mTexWindow.lock().get() == 0){
+    } else if (!mTexWindow.IsValid()){
         return false;
     }
     return true;
@@ -64,16 +64,16 @@ void Texture::release(){
 }
 
 bool Texture::isPrepared(){
-    return mTexture.get() != 0 && mTexWindow.lock().get() != 0;
+    return mTexture.get() != 0 && mTexWindow.IsValid();
 }
 
 
-WindowWPtr Texture::getWindow(){
+WindowHnd Texture::getWindow(){
     return mTexWindow;
 }
 
-void Texture::setWindow(WindowWPtr win){
-    if (win.lock().get() != 0 && mTexWindow.lock().get() != 0 && win.lock().get() != mTexWindow.lock().get()){
+void Texture::setWindow(WindowHnd win){
+    if (win.IsValid() && mTexWindow.IsValid() && win != mTexWindow){
         release();
         mTexWindow = win;
     }
@@ -88,8 +88,7 @@ void Texture::getTextureBounds(int *width, int *height){
 
 void Texture::draw(int x, int y, SDL_Rect* clip){
     if (prepare()){
-        WindowPtr w = mTexWindow.lock();
-        if (w.get() != 0){
+        if (mTexWindow.IsValid()){
             SDL_Rect pos;
             pos.x = x;
             pos.y = y;
@@ -99,19 +98,18 @@ void Texture::draw(int x, int y, SDL_Rect* clip){
             } else {
                 SDL_QueryTexture(mTexture.get(), NULL, NULL, &pos.w, &pos.h);
             }
-            w->drawTo(mTexture.get(), &pos, clip);
+            mTexWindow->drawTo(mTexture.get(), &pos, clip);
         }
     }
 }
 
 
 void Texture::LoadTexture(){
-    WindowPtr w = mTexWindow.lock();
-    if (w.get() != 0){
+    if (mTexWindow.IsValid()){
         if (mTexture.get() == 0){
             SDL_Texture* tex = nullptr;
-            SDL_RendererPtr renderer = w->getSDLRenderer().lock();
-            if (renderer.get() == 0){
+            SDLRendererHnd renderer = mTexWindow->getSDLRenderer();
+            if (!renderer.IsValid()){
                 throw std::runtime_error("Failed to Load Texture: Could not obtain window renderer instance.");
             }
 

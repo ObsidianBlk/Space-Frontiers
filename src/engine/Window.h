@@ -31,14 +31,13 @@
 
 #include <SDL2/SDL.h>
 
+#include "Handler.h"
 
 namespace engine{
 
 
-typedef std::shared_ptr<SDL_Window> SDL_WindowPtr;
-typedef std::weak_ptr<SDL_Window> SDL_WindowWPtr;
-typedef std::shared_ptr<SDL_Renderer> SDL_RendererPtr;
-typedef std::weak_ptr<SDL_Renderer> SDL_RendererWPtr;
+typedef Handler<SDL_Window> SDLWindowHnd;
+typedef Handler<SDL_Renderer> SDLRendererHnd;
 
 
 class Window
@@ -57,18 +56,21 @@ class Window
 
         void present();
 
-        SDL_WindowWPtr getSDLWindow();
-        SDL_RendererWPtr getSDLRenderer();
+        SDLWindowHnd getSDLWindow();
+        SDLRendererHnd getSDLRenderer();
         //SDL_Rect getScreenRect();
 
     protected:
+        typedef std::shared_ptr<SDL_Window> SDL_WindowPtr;
+        typedef std::shared_ptr<SDL_Renderer> SDL_RendererPtr;
+
         SDL_WindowPtr       mWindow;
         SDL_RendererPtr     mRenderer;
         SDL_Rect            mScreenRect;
     private:
 };
 typedef std::shared_ptr<Window> WindowPtr;
-typedef std::weak_ptr<Window> WindowWPtr;
+typedef Handler<Window> WindowHnd;
 
 } // End namespace "engine"
 

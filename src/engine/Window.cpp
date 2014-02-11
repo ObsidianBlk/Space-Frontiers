@@ -76,18 +76,18 @@ void Window::present(){
     SDL_RenderPresent(mRenderer.get());
 }
 
-SDL_WindowWPtr Window::getSDLWindow(){
+SDLWindowHnd Window::getSDLWindow(){
     if (mWindow.get() != 0){
-        return SDL_WindowWPtr(mWindow);
+        return SDLWindowHnd(mWindow);
     }
-    return SDL_WindowWPtr();
+    return SDLWindowHnd();
 }
 
-SDL_RendererWPtr Window::getSDLRenderer(){
+SDLRendererHnd Window::getSDLRenderer(){
     if (mRenderer.get() != 0){
-        return SDL_RendererWPtr(mRenderer);
+        return SDLRendererHnd(mRenderer);
     }
-    return SDL_RendererWPtr();
+    return SDLRendererHnd();
 }
 
 

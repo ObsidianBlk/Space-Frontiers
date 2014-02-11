@@ -31,7 +31,7 @@ const std::string MainMenu::TEXTURE_BACKGROUND_NAME = "tBackground";
 
 MainMenu::MainMenu(engine::GameStateManagerWPtr gsm){
     mHasFocus = false;
-    mWindow = engine::WindowWPtr();
+    mWindow = engine::WindowHnd();
     mTexBackground = engine::TextureWPtr();
 
     engine::GameStateManagerPtr hgsm = gsm.lock();
@@ -61,7 +61,7 @@ void MainMenu::start(){
     }
 
     // Make sure we really do have a window.
-    if (mWindow.lock().get() == 0){
+    if (!mWindow.IsValid()){
         throw std::runtime_error("Failed to obtain window.");
     }
 
@@ -99,13 +99,12 @@ void MainMenu::update(){
 
 void MainMenu::render(){
     if (mHasFocus){
-        engine::WindowPtr win = mWindow.lock();
-        if (win.get() != 0){
+        if (mWindow.IsValid()){
             engine::TexturePtr tex = mTexBackground.lock();
             if (tex.get() != 0){
-                win->clear();
+                mWindow->clear();
                 tex->draw(0, 0);
-                win->present();
+                mWindow->present();
             }
         }
     }

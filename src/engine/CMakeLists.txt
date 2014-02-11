@@ -21,5 +21,6 @@ set(engine_source_files
     Updateables.h
     States.h
     StateManager.h
+    Handler.h
 )
 add_library(engine ${engine_source_files})

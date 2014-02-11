@@ -39,14 +39,16 @@ namespace engine {
         Handler(std::shared_ptr<T> ptr){mRef = std::weak_ptr<T>(ptr);}
 
         bool IsValid(){return mRef.lock().get() != 0;}
+        T* get(){return mRef.lock().get();}
+        T* get() const{return mRef.lock().get();}
 
         std::shared_ptr<T> operator->(){return mRef.lock();}
-        const std::shared_ptr<T> operator->(){return mRef.lock();}
+        //const std::shared_ptr<T> operator->(){return mRef.lock();}
 
-        inline bool operator==(const Handler<T> lhs, const Handler<T> rhs){
-            return lhs.getReference().lock().get() == rhs.getReference().lock().get();
+        inline bool operator==(const Handler<T> rhs){
+            return mRef.lock().get() == rhs.get();
         }
-        inline bool operator!=(const Handler<T> lhs, const Handler<T> rhs){return !operator==(lhs, rhs);}
+        inline bool operator!=(const Handler<T> rhs){return !operator==(rhs);}
 
 
     protected:

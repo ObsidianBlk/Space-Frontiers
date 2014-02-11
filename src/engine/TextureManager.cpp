@@ -42,7 +42,7 @@ TextureManager* TextureManager::getInstance(){
     return mInstance;
 }
 
-TextureWPtr TextureManager::addTexture(std::string name, std::string uri, WindowWPtr win, bool allowOverwrite){
+TextureWPtr TextureManager::addTexture(std::string name, std::string uri, WindowHnd win, bool allowOverwrite){
     if (allowOverwrite || !has(name)){
         if (!hasByURI(uri)){
             try{

@@ -38,14 +38,14 @@
 namespace engine{
 
 
-class WindowManager : public ResourceManager<WindowPtr, WindowWPtr>
+class WindowManager : public ResourceManager<WindowPtr, WindowHnd>
 {
     public:
         /**
         * Will attempt to create, store, and return a weak pointer to a new Window object. If a Window object already exists under the given name,
         * an runtime exception is thrown.
         */
-        WindowWPtr createWindow(std::string wname, std::string title, int x, int y, int w, int h, Uint32 wflags=0, Uint32 rflags=SDL_RENDERER_ACCELERATED);
+        WindowHnd createWindow(std::string wname, std::string title, int x, int y, int w, int h, Uint32 wflags=0, Uint32 rflags=SDL_RENDERER_ACCELERATED);
 
         static WindowManager* getInstance();
 

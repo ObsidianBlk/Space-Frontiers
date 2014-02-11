@@ -31,7 +31,7 @@ namespace engine{
 
 WindowManager* WindowManager::mInstance = nullptr;
 
-WindowManager::WindowManager() : ResourceManager<WindowPtr, WindowWPtr>(){}
+WindowManager::WindowManager() : ResourceManager<WindowPtr, WindowHnd>(){}
 
 WindowManager* WindowManager::getInstance(){
     if (mInstance == nullptr){
@@ -40,11 +40,11 @@ WindowManager* WindowManager::getInstance(){
     return mInstance;
 }
 
-WindowWPtr WindowManager::createWindow(std::string wname, std::string title, int x, int y, int w, int h, Uint32 wflags, Uint32 rflags){
+WindowHnd WindowManager::createWindow(std::string wname, std::string title, int x, int y, int w, int h, Uint32 wflags, Uint32 rflags){
     if (!this->has(wname)){
         WindowPtr win(new Window(title, x, y, w, h, wflags, rflags));
         mResources.insert(std::pair<std::string, WindowPtr>(wname, win));
-        return WindowWPtr(win);
+        return WindowHnd(win);
     }
     throw std::runtime_error(std::string("Cannot create Window named \"") + wname + std::string("\". Window already exists."));
 }
