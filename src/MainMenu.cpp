@@ -29,14 +29,13 @@ const std::string MainMenu::WINDOW_RESOURCE_TITLE = "Space Frontiers";
 const std::string MainMenu::TEXTURE_BACKGROUND_NAME = "tBackground";
 
 
-MainMenu::MainMenu(engine::GameStateManagerWPtr gsm){
+MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
     mHasFocus = false;
     mWindow = engine::WindowHnd();
-    mTexBackground = engine::TextureWPtr();
+    mTexBackground = engine::TextureHnd();
 
-    engine::GameStateManagerPtr hgsm = gsm.lock();
-    if (hgsm.get() != 0){
-        hgsm->addState(engine::StatePtr(this));
+    if (gsm.IsValid()){
+        gsm->addState(engine::StatePtr(this));
     } else {
         throw std::runtime_error("Failed to obtain GameStateManager object.");
     }
@@ -73,7 +72,7 @@ void MainMenu::start(){
     } else {
         mTexBackground = tm->addTexture(MainMenu::TEXTURE_BACKGROUND_NAME, "assets/textures/mmbackground.jpg", mWindow);
     }
-    if (mTexBackground.lock().get() == 0){
+    if (!mTexBackground.IsValid()){
         throw std::runtime_error("Failed to obtain texture resource.");
     }
 
@@ -92,20 +91,16 @@ void MainMenu::looseFocus(){
 
 void MainMenu::update(){
     if (mHasFocus){
-        engine::GameStateManagerPtr gsm = mGameStateManager.lock();
-        poll(gsm);
+        poll();
     }
 }
 
 void MainMenu::render(){
     if (mHasFocus){
-        if (mWindow.IsValid()){
-            engine::TexturePtr tex = mTexBackground.lock();
-            if (tex.get() != 0){
-                mWindow->clear();
-                tex->draw(0, 0);
-                mWindow->present();
-            }
+        if (mWindow.IsValid() && mTexBackground.IsValid()){
+            mWindow->clear();
+            mTexBackground->draw(0, 0);
+            mWindow->present();
         }
     }
 }
@@ -113,7 +108,7 @@ void MainMenu::render(){
 
 
 // This is soon to DIE!
-void MainMenu::poll(engine::GameStateManagerPtr &gsm){
+void MainMenu::poll(){
     // message processing loop
     SDL_Event event;
          while (SDL_PollEvent(&event))
@@ -123,9 +118,9 @@ void MainMenu::poll(engine::GameStateManagerPtr &gsm){
         {
             // exit if the window is closed
         case SDL_QUIT:
-            if (gsm.get() != 0){
+            if (mGameStateManager.IsValid()){
                 // THIS state should have focus when this occures, we we're dropping ourselved here!
-                gsm->dropState();
+                mGameStateManager->dropState();
             }
             break;
 
@@ -134,9 +129,9 @@ void MainMenu::poll(engine::GameStateManagerPtr &gsm){
             {
                 // exit if ESCAPE is pressed
                 if (event.key.keysym.sym == SDLK_ESCAPE)
-                    if (gsm.get() != 0){
+                    if (mGameStateManager.IsValid()){
                         // THIS state should have focus when this occures, we we're dropping ourselved here!
-                        gsm->dropState();
+                        mGameStateManager->dropState();
                     }
                 break;
             }

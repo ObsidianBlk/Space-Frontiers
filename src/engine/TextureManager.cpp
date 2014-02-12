@@ -31,7 +31,7 @@ namespace engine{
 
 TextureManager* TextureManager::mInstance = nullptr;
 
-TextureManager::TextureManager() : ResourceManager<TexturePtr, TextureWPtr>(){
+TextureManager::TextureManager() : ResourceManager<TexturePtr, TextureHnd>(){
     //ResourceManager<TexturePtr, TextureWPtr>();
 }
 
@@ -42,19 +42,19 @@ TextureManager* TextureManager::getInstance(){
     return mInstance;
 }
 
-TextureWPtr TextureManager::addTexture(std::string name, std::string uri, WindowHnd win, bool allowOverwrite){
+TextureHnd TextureManager::addTexture(std::string name, std::string uri, WindowHnd win, bool allowOverwrite){
     if (allowOverwrite || !has(name)){
         if (!hasByURI(uri)){
             try{
                 TexturePtr t = TexturePtr(new Texture(uri, win));
                 mResources.insert(std::pair<std::string, TexturePtr>(name, t));
-                return TextureWPtr(t);
+                return TextureHnd(t);
             } catch (std::runtime_error e){
                 throw e;
             }
         }
     }
-    return TextureWPtr();
+    return TextureHnd();
 }
 
 

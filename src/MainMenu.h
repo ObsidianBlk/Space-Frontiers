@@ -40,7 +40,7 @@
 class MainMenu : public engine::IState, public engine::IUpdateable, public engine::IRenderable
 {
     public:
-        MainMenu(engine::GameStateManagerWPtr gsm);
+        MainMenu(engine::GameStateManagerHnd gsm);
         ~MainMenu();
 
         void start();
@@ -59,14 +59,14 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         static const std::string TEXTURE_BACKGROUND_NAME;
 
 
-        engine::GameStateManagerWPtr mGameStateManager;
+        engine::GameStateManagerHnd mGameStateManager;
         engine::WindowHnd mWindow;
-        engine::TextureWPtr mTexBackground;
+        engine::TextureHnd mTexBackground;
         bool mHasFocus;
 
 
         // NOTE: This method will die doon!
-        void poll(engine::GameStateManagerPtr &gsm);
+        void poll();
 };
 
 #endif // MAINMENU_H

@@ -41,7 +41,7 @@ class Application
         Application();
         ~Application();
         void run();
-        engine::GameStateManagerWPtr getGameStateManager();
+        engine::GameStateManagerHnd getGameStateManager();
 
     protected:
         engine::GameStateManagerPtr mGameStateManager;

@@ -32,6 +32,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#include "Handler.h"
 #include "Window.h"
 #include "Resource.h"
 
@@ -45,7 +46,7 @@ typedef std::weak_ptr<SDL_Texture> SDL_TextureWPtr;
 
 class Texture;
 typedef std::shared_ptr<Texture> TexturePtr;
-typedef std::weak_ptr<Texture> TextureWPtr;
+typedef Handler<Texture> TextureHnd;
 
 
 class Texture : public Resource

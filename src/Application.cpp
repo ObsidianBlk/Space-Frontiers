@@ -43,11 +43,11 @@ void Application::run(){
     }
 }
 
-engine::GameStateManagerWPtr Application::getGameStateManager(){
+engine::GameStateManagerHnd Application::getGameStateManager(){
     if (mGameStateManager.get() != 0){
-        return engine::GameStateManagerWPtr(mGameStateManager);
+        return engine::GameStateManagerHnd(mGameStateManager);
     }
-    return engine::GameStateManagerWPtr();
+    return engine::GameStateManagerHnd();
 }
 
 

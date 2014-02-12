@@ -30,6 +30,7 @@
 //#include <boost/shared_ptr.hpp>
 //#include <boost/weak_ptr.hpp>
 
+#include "Handler.h"
 #include "StateManager.h"
 #include "Updateables.h"
 #include "Renderables.h"
@@ -39,7 +40,7 @@ namespace engine{
 
 class GameStateManager;
 typedef std::shared_ptr<GameStateManager> GameStateManagerPtr;
-typedef std::weak_ptr<GameStateManager> GameStateManagerWPtr;
+typedef Handler<GameStateManager> GameStateManagerHnd;
 
 class GameStateManager : public IStateManager, public IUpdateable, public IRenderable
 {
