@@ -58,7 +58,17 @@ class Window
 
         SDLWindowHnd getSDLWindow();
         SDLRendererHnd getSDLRenderer();
-        //SDL_Rect getScreenRect();
+
+        int getDisplayIndex();
+        void getDisplayMode(SDL_DisplayMode *mode);
+        void setDisplayMode(SDL_DisplayMode *mode);
+
+        void setFullscreen();
+
+        static int GetNumVideoDisplays();
+        static int GetNumDisplayModes(int displayIndex);
+        static void GetDisplayMode(int displayIndex, int modeIndex, SDL_DisplayMode *mode);
+
 
     protected:
         typedef std::shared_ptr<SDL_Window> SDL_WindowPtr;

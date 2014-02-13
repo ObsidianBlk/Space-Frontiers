@@ -91,6 +91,57 @@ SDLRendererHnd Window::getSDLRenderer(){
 }
 
 
+int Window::getDisplayIndex(){
+    if (mWindow.get() != 0){
+        return SDL_GetWindowDisplayIndex(mWindow.get());
+    }
+    return 0;
+}
+
+void Window::getDisplayMode(SDL_DisplayMode *mode){
+    if (mWindow.get() != 0){
+        SDL_GetWindowDisplayMode(mWindow.get(), mode);
+    } else {
+        mode = nullptr;
+    }
+}
+
+void Window::setDisplayMode(SDL_DisplayMode *mode){
+    if (mWindow.get() != 0){
+        SDL_SetWindowDisplayMode(mWindow.get(), mode);
+    }
+}
+
+
+void Window::setFullscreen(){
+    if (mWindow.get() != 0){
+        // Truthfully... the way I understand SDL2's management of "fake" fullscreen, I prefer it
+        // over "true" full screen. Seems more stable... but then, that's just me.
+        // For now, this will only do "fake" full screen, but may give the choice later.
+        SDL_SetWindowFullscreen(mWindow.get(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+        // TODO: Ok... this is actually sort of lame. This should be a form of toggle, and, as such,
+        // I should be storing the current "windowed" display mode in which to switch BACK to if the
+        // user disabled fullscreen mode. Buuuut... I'd rather write this comment that do that right
+        // this instant, soooo... some other time.
+    }
+}
+
+
+// ---------------------
+
+
+int Window::GetNumVideoDisplays(){
+    return SDL_GetNumVideoDisplays();
+}
+
+int Window::GetNumDisplayModes(int displayIndex){
+    return SDL_GetNumDisplayModes(displayIndex);
+}
+
+void Window::GetDisplayMode(int displayIndex, int modeIndex, SDL_DisplayMode *mode){
+    SDL_GetDisplayMode(displayIndex, modeIndex, mode);
+}
 
 
 } // End namespace "engine"

@@ -54,6 +54,7 @@ void MainMenu::start(){
     } else {
         try{
             mWindow = wm->createWindow(MainMenu::WINDOW_RESOURCE_NAME, MainMenu::WINDOW_RESOURCE_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600);
+            mWindow->setLogicalRendererSize(1680, 1050);
         } catch (std::runtime_error e){
             throw e;
         }
