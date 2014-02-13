@@ -22,5 +22,7 @@ set(engine_source_files
     States.h
     StateManager.h
     Handler.h
+    Writer.h
+    Writer.cpp
 )
 add_library(engine ${engine_source_files})

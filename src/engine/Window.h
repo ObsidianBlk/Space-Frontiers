@@ -59,6 +59,8 @@ class Window
         SDLWindowHnd getSDLWindow();
         SDLRendererHnd getSDLRenderer();
 
+        SDL_Texture* textureFromSurface(SDL_Surface* surf);
+
         int getDisplayIndex();
         void getDisplayMode(SDL_DisplayMode *mode);
         void setDisplayMode(SDL_DisplayMode *mode);

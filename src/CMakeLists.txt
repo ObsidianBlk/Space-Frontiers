@@ -4,6 +4,7 @@ set(game_source_files
     Application.h
     MainMenu.cpp
     MainMenu.h
+    Common.h
 )
 #add_library(game ${game_source_files})
 

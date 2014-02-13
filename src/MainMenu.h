@@ -29,12 +29,14 @@
 
 #include <SDL2/SDL.h>
 
+#include "Common.h"
 #include "engine/States.h"
 #include "engine/Updateables.h"
 #include "engine/Renderables.h"
 #include "engine/GameStateManager.h"
 #include "engine/WindowManager.h"
 #include "engine/TextureManager.h"
+#include "engine/Writer.h"
 
 
 class MainMenu : public engine::IState, public engine::IUpdateable, public engine::IRenderable
@@ -53,13 +55,10 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         void render();
 
     private:
-        // NOTE: These constants are temporary.
-        static const std::string WINDOW_RESOURCE_NAME;
-        static const std::string WINDOW_RESOURCE_TITLE;
         static const std::string TEXTURE_BACKGROUND_NAME;
 
-
         engine::GameStateManagerHnd mGameStateManager;
+        engine::WriterHnd mWriter;
         engine::WindowHnd mWindow;
         engine::TextureHnd mTexBackground;
         bool mHasFocus;

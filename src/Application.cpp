@@ -28,6 +28,19 @@
 Application::Application(){
     // While we create the GameStateManager in the Application class, only decendants can access and push a state to it.
     mGameStateManager = engine::GameStateManagerPtr(new engine::GameStateManager());
+    engine::WindowManager* wm = engine::WindowManager::getInstance();
+    engine::WindowHnd w = engine::WindowHnd();
+    try{
+        w = wm->createWindow(MAINWINDOW_RESOURCE_NAME, MAINWINDOW_RESOURCE_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600);
+    } catch (std::runtime_error e){
+        throw e;
+    }
+
+    // Make sure we really do have a window.
+    if (!w.IsValid()){
+        throw std::runtime_error("Failed to create main application window.");
+    }
+    w->setLogicalRendererSize(1680, 1050);
 }
 
 Application::~Application()

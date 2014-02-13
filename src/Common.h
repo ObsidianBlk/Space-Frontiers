@@ -1,5 +1,5 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#ifndef COMMON_H
+#define COMMON_H
 
 /*
 * The MIT License (MIT)
@@ -25,30 +25,9 @@
 * THE SOFTWARE.
 */
 
+#include <string>
 
-#ifdef __cplusplus
-    #include <cstdlib>
-#else
-    #include <stdlib.h>
-#endif
+const std::string MAINWINDOW_RESOURCE_NAME = "MainWindow";
+const std::string MAINWINDOW_RESOURCE_TITLE = "Space Frontiers";
 
-#include "Common.h"
-#include "engine/WindowManager.h"
-#include "engine/Window.h"
-#include "engine/GameStateManager.h"
-
-
-class Application
-{
-    public:
-        Application();
-        ~Application();
-        void run();
-        engine::GameStateManagerHnd getGameStateManager();
-
-    protected:
-        engine::GameStateManagerPtr mGameStateManager;
-    private:
-};
-
-#endif // APPLICATION_H
+#endif // COMMON_H

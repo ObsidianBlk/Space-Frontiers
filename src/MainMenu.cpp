@@ -24,10 +24,7 @@
 
 #include "MainMenu.h"
 
-const std::string MainMenu::WINDOW_RESOURCE_NAME = "MainWindow";
-const std::string MainMenu::WINDOW_RESOURCE_TITLE = "Space Frontiers";
 const std::string MainMenu::TEXTURE_BACKGROUND_NAME = "tBackground";
-
 
 MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
     mHasFocus = false;
@@ -49,16 +46,7 @@ MainMenu::~MainMenu(){}
 void MainMenu::start(){
     // First either, get or create the main window.
     engine::WindowManager* wm = engine::WindowManager::getInstance();
-    if (wm->has(MainMenu::WINDOW_RESOURCE_NAME)){
-        mWindow = wm->get(MainMenu::WINDOW_RESOURCE_NAME);
-    } else {
-        try{
-            mWindow = wm->createWindow(MainMenu::WINDOW_RESOURCE_NAME, MainMenu::WINDOW_RESOURCE_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600);
-            mWindow->setLogicalRendererSize(1680, 1050);
-        } catch (std::runtime_error e){
-            throw e;
-        }
-    }
+    mWindow = wm->get(MAINWINDOW_RESOURCE_NAME);
 
     // Make sure we really do have a window.
     if (!mWindow.IsValid()){
@@ -77,6 +65,11 @@ void MainMenu::start(){
         throw std::runtime_error("Failed to obtain texture resource.");
     }
 
+    mWriter = engine::Writer::getHandle();
+    if (mWriter.IsValid()){
+        mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 32);
+        mWriter->setPenColor(255, 0, 0);
+    }
     mHasFocus = true;
 }
 
@@ -101,6 +94,9 @@ void MainMenu::render(){
         if (mWindow.IsValid() && mTexBackground.IsValid()){
             mWindow->clear();
             mTexBackground->draw(0, 0);
+            if (mWriter.IsValid()){
+                mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
+            }
             mWindow->present();
         }
     }

@@ -8,13 +8,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 include(FindPkgConfig)
 pkg_search_module(SDL2 REQUIRED sdl2)
 pkg_search_module(SDL2IMG REQUIRED SDL2_image)
+pkg_search_module(SDL2TTF REQUIRED SDL2_ttf)
 find_package(Boost COMPONENTS system REQUIRED)
 
 # Settings those required libraries in the CORELIBS variable.
-set(CORELIBS ${SDL2_LIBRARIES} ${SDL2IMG_LIBRARIES} ${Boost_LIBRARIES})
+set(CORELIBS ${SDL2_LIBRARIES} ${SDL2IMG_LIBRARIES} ${SDL2TTF_LIBRARIES} ${Boost_LIBRARIES})
 
 # Set the include and link directories for all required libraries and source code.
-include_directories(${SDL2_INCLUDE_DIRS} ${SDL2IMG_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS} ${SDL2IMG_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${SpaceFrontiers_SOURCE_DIR}/src ${SpaceFrontiers_SOURCE_DIR}/src/engine)
 link_directories(${SpaceFrontiers_SOURCE_DIR}/src ${SpaceFrontiers_SOURCE_DIR}/src/engine)

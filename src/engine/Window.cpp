@@ -90,6 +90,13 @@ SDLRendererHnd Window::getSDLRenderer(){
     return SDLRendererHnd();
 }
 
+SDL_Texture* Window::textureFromSurface(SDL_Surface* surf){
+    if (mRenderer.get() != 0){
+        return SDL_CreateTextureFromSurface(mRenderer.get(), surf);
+    }
+    return nullptr;
+}
+
 
 int Window::getDisplayIndex(){
     if (mWindow.get() != 0){
