@@ -98,6 +98,14 @@ SDL_Texture* Window::textureFromSurface(SDL_Surface* surf){
 }
 
 
+Uint32 Window::getPixelFormat(){
+    SDL_Window *w = mWindow.get();
+    if (w != 0){
+        return SDL_GetWindowPixelFormat(w);
+    }
+    return 0;
+}
+
 int Window::getDisplayIndex(){
     if (mWindow.get() != 0){
         return SDL_GetWindowDisplayIndex(mWindow.get());

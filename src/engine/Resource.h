@@ -34,6 +34,7 @@ namespace engine{
 class Resource
 {
     public:
+        Resource();
         Resource(std::string uri);
         virtual ~Resource(){};
         virtual bool prepare()=0;

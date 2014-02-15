@@ -31,6 +31,7 @@
 namespace engine{
 
 
+Resource::Resource(){mURI = "";}
 
 Resource::Resource(std::string uri){
     if (!resourceExists(uri)){
@@ -44,10 +45,12 @@ std::string Resource::getURI(){
 }
 
 bool Resource::resourceExists(std::string uri){
-    // TODO: (MAYBE) Extend this to allow for a virtual file system at a later date.
-    if (FILE* file = fopen(uri.c_str(), "r")){
-        fclose(file);
-        return true;
+    if (uri != ""){
+        // TODO: (MAYBE) Extend this to allow for a virtual file system at a later date.
+        if (FILE* file = fopen(uri.c_str(), "r")){
+            fclose(file);
+            return true;
+        }
     }
     return false;
 }

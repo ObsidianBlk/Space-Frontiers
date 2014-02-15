@@ -52,8 +52,8 @@ typedef Handler<Texture> TextureHnd;
 class Texture : public Resource
 {
     public:
+        Texture(WindowHnd win, int w, int h, int depth, Uint32 flags=0, Uint32 rmask=0, Uint32 gmask=0, Uint32 bmask=0, Uint32 amask=0);
         Texture(std::string uri, WindowHnd win);
-        //Texture(TextureWPtr tex, WindowWPtr win);
         ~Texture();
 
         bool prepare();
@@ -69,6 +69,7 @@ class Texture : public Resource
 
     protected:
         SDL_TexturePtr mTexture;
+        SDL_SurfacePtr mSurface;
         WindowHnd mTexWindow;
 
         void LoadTexture();

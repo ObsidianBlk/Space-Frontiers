@@ -55,7 +55,7 @@ void MainMenu::start(){
 
 
     // Second, let's get or add the textures we need.
-    engine::TextureManager* tm = engine::TextureManager::getInstance();
+    /*engine::TextureManager* tm = engine::TextureManager::getInstance();
     if (tm->has(MainMenu::TEXTURE_BACKGROUND_NAME)){
         mTexBackground = tm->get(MainMenu::TEXTURE_BACKGROUND_NAME);
     } else {
@@ -63,13 +63,15 @@ void MainMenu::start(){
     }
     if (!mTexBackground.IsValid()){
         throw std::runtime_error("Failed to obtain texture resource.");
-    }
+    }*/
 
     mWriter = engine::Writer::getHandle();
     if (mWriter.IsValid()){
-        mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 32);
-        mWriter->setPenColor(255, 0, 0);
+        throw std::runtime_error("Failed to obtain Writer object.");
     }
+    mWriter->defineFont("default", "assets/fonts/larabiefontrg.ttf", 32);
+    mWriter->setPenColor(64, 255, 64);
+
     mHasFocus = true;
 }
 

@@ -61,6 +61,8 @@ class Window
 
         SDL_Texture* textureFromSurface(SDL_Surface* surf);
 
+        Uint32 getPixelFormat();
+
         int getDisplayIndex();
         void getDisplayMode(SDL_DisplayMode *mode);
         void setDisplayMode(SDL_DisplayMode *mode);

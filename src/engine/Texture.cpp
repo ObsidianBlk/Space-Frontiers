@@ -32,6 +32,7 @@ Texture::~Texture(){}
 
 Texture::Texture(std::string uri, WindowHnd win) : Resource(uri){
     mTexture = SDL_TexturePtr();
+    mSurface = SDL_SurfacePtr();
 
     if (!win.IsValid()){
         throw std::runtime_error("Cannot Create Texture: Window pointer invalid.");
@@ -41,15 +42,57 @@ Texture::Texture(std::string uri, WindowHnd win) : Resource(uri){
     LoadTexture();
 }
 
-//Texture::Texture(TextureWPtr tex, WindowWPtr win);
+Texture::Texture(WindowHnd win, int w, int h, int depth, Uint32 flags, Uint32 rmask, Uint32 gmask, Uint32 bmask, Uint32 amask) : Resource(){
+    mTexture = SDL_TexturePtr();
+    mSurface = SDL_SurfacePtr();
+
+    if (!win.IsValid()){
+        throw std::runtime_error("Cannot Create Texture: Window pointer invalid.");
+    }
+    mTexWindow = win;
+
+    SDL_Surface *usurf = SDL_CreateRGBSurface(flags, w, h, depth, rmask, gmask, bmask, amask);
+    if (usurf == nullptr){
+        throw std::runtime_error("Failed to create texture pixel surface.");
+    }
+    SDL_PixelFormat *fmt = SDL_AllocFormat(mTexWindow->getPixelFormat());
+    if (fmt == 0){
+        SDL_FreeSurface(usurf);
+        throw std::runtime_error("Failed to obtain window pixel format.");
+    }
+
+    SDL_Surface *osurf = SDL_ConvertSurface(usurf, fmt, 0);
+    SDL_FreeSurface(usurf);
+    SDL_FreeFormat(fmt);
+
+    if (osurf == 0){
+        throw std::runtime_error("Failed to create optimized pixel surface.");
+    }
+
+    mSurface = SDL_SurfacePtr(osurf);
+}
+
 
 bool Texture::prepare(){
     if (mTexture.get() == 0){
-        try{
-            LoadTexture();
-        } catch (std::runtime_error e){
-            // Print error
-            return false;
+        if (mSurface.get() != 0){
+            if (!mTexWindow.IsValid()){
+                throw std::runtime_error("Cannot convert pixel surface to screen texture. Defined Window is invalid.");
+            }
+            SDLRendererHnd renderer = mTexWindow->getSDLRenderer();
+            // TODO: I should test the renderer, but I'mma be lazy right now. Fix me please!
+            SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer.get(), mSurface.get());
+            if (tex == nullptr){
+                throw std::runtime_error("Failed to convert pixel surface to screen texture.");
+            }
+            mTexture = SDL_TexturePtr(tex, SDL_DestroyTexture);
+        } else if (mURI != ""){
+            try{
+                LoadTexture();
+            } catch (std::runtime_error e){
+                // Print error
+                return false;
+            }
         }
     } else if (!mTexWindow.IsValid()){
         return false;
@@ -105,7 +148,7 @@ void Texture::draw(int x, int y, SDL_Rect* clip){
 
 
 void Texture::LoadTexture(){
-    if (mTexWindow.IsValid()){
+    if (mTexWindow.IsValid() && mURI != ""){
         if (mTexture.get() == 0){
             SDL_Texture* tex = nullptr;
             SDLRendererHnd renderer = mTexWindow->getSDLRenderer();
