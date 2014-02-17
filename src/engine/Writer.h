@@ -50,10 +50,12 @@ namespace engine{
             * Adds a font to the Writer font map. After definition, the font is accessed by the given name.
             */
             void defineFont(std::string fontName, std::string fontSrc, int fontSize);
+            int getFontPixelHeight(std::string fontName);
 
             void setPenColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a=255);
-            void setPenColor(SDL_Color c);
-            SDL_Color getPenColor();
+            void setPenColor(const SDL_Color *c);
+            void getPenColor(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+            void getPenColor(SDL_Color* c);
 
             /**
             * Generates an SDL_Surface object with the given message rendered using the requested font, and returns a pointer to the SDL_Surface object.

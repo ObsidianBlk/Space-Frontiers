@@ -65,6 +65,13 @@ namespace engine{
         }
     }
 
+    int Writer::getFontPixelHeight(std::string fontName){
+        TTF_Font* font = getFontPtr(fontName);
+        if (font != nullptr){
+            return TTF_FontHeight(font);
+        }
+    }
+
     void Writer::setPenColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a){
         mPen.r = r;
         mPen.g = g;
@@ -72,8 +79,26 @@ namespace engine{
         mPen.a = a;
     }
 
-    void Writer::setPenColor(SDL_Color c){mPen = c;}
-    SDL_Color Writer::getPenColor(){return mPen;}
+    void Writer::setPenColor(const SDL_Color *c){
+        mPen.r = c->r;
+        mPen.g = c->g;
+        mPen.b = c->b;
+        mPen.a = c->a;
+    }
+
+    void Writer::getPenColor(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a){
+        if (r != nullptr){*r = mPen.r;}
+        if (g != nullptr){*g = mPen.g;}
+        if (b != nullptr){*b = mPen.b;}
+        if (a != nullptr){*a = mPen.a;}
+    }
+
+    void Writer::getPenColor(SDL_Color* c){
+        c->r = mPen.r;
+        c->g = mPen.g;
+        c->b = mPen.b;
+        c->a = mPen.a;
+    }
 
     SDL_Surface* Writer::textToSurface(std::string fontName, std::string message){
         TTF_Font* font = getFontPtr(fontName);

@@ -25,6 +25,7 @@
 * THE SOFTWARE.
 */
 
+#include <vector>
 #include <string>
 
 #include <SDL2/SDL.h>
@@ -56,6 +57,7 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
 
     private:
         static const std::string TEXTURE_BACKGROUND_NAME;
+        static const std::string CODE_STREAM_TEXT;
 
         engine::GameStateManagerHnd mGameStateManager;
         engine::WriterHnd mWriter;
@@ -63,9 +65,16 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         engine::TextureHnd mTexBackground;
         bool mHasFocus;
 
+        std::vector<std::string> mCodeStreamList;
+        int mCodeStreamIndex;
+        std::vector<SDL_Texture*> mCodeStreamTextures;
+
 
         // NOTE: This method will die doon!
         void poll();
+        void splitString(std::string s, std::string delimiter, std::vector<std::string> *container);
+
+        void renderCodeStream();
 };
 
 #endif // MAINMENU_H

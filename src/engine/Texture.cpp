@@ -148,10 +148,7 @@ void Texture::render(int x, int y, SDL_Rect* clip){
 
 void Texture::render(const SDL_Rect* src, const SDL_Rect* dst, const double& angle, const SDL_Point* center, const SDL_RendererFlip& flip){
     if (prepare() && mTexWindow.IsValid()){
-        double a = angle;
-        SDL_RendererFlip f = flip;
         mTexWindow->render(mTexture.get(), src, dst, angle, center, flip);
-        //mTexWindow->render(mTexture.get(), &(*src), &(*dst), angle, &(*center), flip);
     }
 }
 

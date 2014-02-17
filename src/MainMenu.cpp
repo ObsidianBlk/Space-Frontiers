@@ -26,6 +26,161 @@
 
 const std::string MainMenu::TEXTURE_BACKGROUND_NAME = "tBackground";
 
+/*
+* NOTE: Defined below is a estetically modified and comment stripped form of a C++ Sha1 class source code.
+* This code was written by Michael D. Leonhard and is made available at the website http://www.tamale.net/sha1/sha1-0.2/
+* It's been made freely available, but is being used here in the context of a "steaming code" effect. No actual application in this software.
+*/
+const std::string MainMenu::CODE_STREAM_TEXT = "#ifndef SHA1_HEADER\n"
+    "typedef unsigned int Uint32;\n"
+    " class SHA1\n"
+    " {\n"
+    "  private:\n"
+    "   Uint32 H0, H1, H2, H3, H4;\n"
+    "   unsigned char bytes[64];\n"
+    "   int unprocessedBytes;\n"
+    "   Uint32 size;\n"
+    "   void process();\n"
+	"  public:\n"
+    "   SHA1();\n"
+    "   ~SHA1();\n"
+    "   void addBytes( const char* data, int num );\n"
+    "   unsigned char* getDigest();\n"
+    "   static Uint32 SHA1::lrot( Uint32 x, int bits );\n"
+    "   static void SHA1::storeBigEndianUint32( unsigned char* byte, Uint32 num );\n"
+    "   static void SHA1::hexPrinter( unsigned char* c, int l );\n"
+    " };\n"
+    "#define SHA1_HEADER\n"
+    "#endif\n\n\n"
+    "void SHA1::hexPrinter( unsigned char* c, int l )\n"
+    "{\n"
+	" assert( c );\n"
+	" assert( l > 0 );\n"
+	" while( l > 0 )\n"
+	" {\n"
+    "  printf( \" %02x\", *c );\n"
+    "  l--;\n"
+    "  c++;\n"
+	" }\n"
+    "}\n"
+    "Uint32 SHA1::lrot( Uint32 x, int bits )\n"
+    "{\n"
+	" return (x<<bits) | (x>>(32 - bits));\n"
+    "};\n"
+    "void SHA1::storeBigEndianUint32( unsigned char* byte, Uint32 num )\n"
+    "{\n"
+	" assert( byte );\n"
+    " byte[0] = (unsigned char)(num>>24);\n"
+	" byte[1] = (unsigned char)(num>>16);\n"
+	" byte[2] = (unsigned char)(num>>8);\n"
+	" byte[3] = (unsigned char)num;\n"
+    "}\n"
+    "SHA1::SHA1()\n"
+    "{\n"
+	" assert( sizeof( Uint32 ) * 5 == 20 );\n"
+    " H0 = 0x67452301;\n"
+	" H1 = 0xefcdab89;\n"
+	" H2 = 0x98badcfe;\n"
+	" H3 = 0x10325476;\n"
+	" H4 = 0xc3d2e1f0;\n"
+	" unprocessedBytes = 0;\n"
+	" size = 0;\n"
+    "}\n"
+    "SHA1::~SHA1()\n"
+    "{\n"
+    " H0 = H1 = H2 = H3 = H4 = 0;\n"
+	" for( int c = 0; c < 64; c++ ) bytes[c] = 0;\n"
+	" unprocessedBytes = size = 0;\n"
+    "}\n"
+    "void SHA1::process()\n"
+    "{\n"
+	" assert( unprocessedBytes == 64 );\n"
+    " int t;\n"
+	" Uint32 a, b, c, d, e, K, f, W[80];\n"
+    " a = H0;\n"
+	" b = H1;\n"
+	" c = H2;\n"
+	" d = H3;\n"
+	" e = H4;\n"
+	" for( t = 0; t < 16; t++ ) W[t] = (bytes[t*4] << 24)\n"
+    "      +(bytes[t*4 + 1] << 16)\n"
+    "      +(bytes[t*4 + 2] << 8)\n"
+    "      + bytes[t*4 + 3];\n"
+	" for(; t< 80; t++ ) W[t] = lrot( W[t-3]^W[t-8]^W[t-14]^W[t-16], 1 );\n"
+	" Uint32 temp;\n"
+	" for( t = 0; t < 80; t++ )\n"
+	" {\n"
+    "  if( t < 20 ) {\n"
+    "   K = 0x5a827999;\n"
+    "   f = (b & c) | ((b ^ 0xFFFFFFFF) & d);\n"
+    "  } else if( t < 40 ) {\n"
+    "   K = 0x6ed9eba1;\n"
+    "   f = b ^ c ^ d;\n"
+    "  } else if( t < 60 ) {\n"
+    "   K = 0x8f1bbcdc;\n"
+    "   f = (b & c) | (b & d) | (c & d);\n"
+    "  } else {\n"
+    "   K = 0xca62c1d6;\n"
+    "   f = b ^ c ^ d;\n"
+    "  }\n"
+    "  temp = lrot(a,5) + f + e + W[t] + K;\n"
+    "  e = d;\n"
+    "  d = c;\n"
+    "  c = lrot(b,30);\n"
+    "  b = a;\n"
+    "  a = temp;\n"
+	" }\n"
+	" H0 += a;\n"
+	" H1 += b;\n"
+	" H2 += c;\n"
+	" H3 += d;\n"
+	" H4 += e;\n"
+	" unprocessedBytes = 0;\n"
+    "}\n"
+    "void SHA1::addBytes( const char* data, int num )\n"
+    "{\n"
+	" assert( data );\n"
+	" assert( num > 0 );\n"
+	" size += num;\n"
+	" while( num > 0 )\n"
+	" {\n"
+    "  int needed = 64 - unprocessedBytes;\n"
+    "  assert( needed > 0 );\n"
+    "  int toCopy = (num < needed) ? num : needed;\n"
+    "  memcpy( bytes + unprocessedBytes, data, toCopy );\n"
+    "  num -= toCopy;\n"
+    "  data += toCopy;\n"
+    "  unprocessedBytes += toCopy;\n"
+    "  if( unprocessedBytes == 64 ) process();\n"
+	" }\n"
+    "}\n"
+    "unsigned char* SHA1::getDigest()\n"
+    "{\n"
+	" Uint32 totalBitsL = size << 3;\n"
+    " Uint32 totalBitsH = size >> 29;\n"
+	" addBytes( \"\\x80\", 1 );\n"
+	" unsigned char footer[64] = {\n"
+    "   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\n"
+    "   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\n"
+    "   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\n"
+    "   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };\n"
+	" if( unprocessedBytes > 56 )\n"
+    "  addBytes( (char*)footer, 64 - unprocessedBytes);\n"
+	" assert( unprocessedBytes <= 56 );\n"
+	" int neededZeros = 56 - unprocessedBytes;\n"
+	" storeBigEndianUint32( footer + neededZeros    , totalBitsH );\n"
+	" storeBigEndianUint32( footer + neededZeros + 4, totalBitsL );\n"
+	" addBytes( (char*)footer, neededZeros + 8 );\n"
+	" unsigned char* digest = (unsigned char*)malloc( 20 );\n"
+	" storeBigEndianUint32( digest, H0 );\n"
+	" storeBigEndianUint32( digest + 4, H1 );\n"
+	" storeBigEndianUint32( digest + 8, H2 );\n"
+	" storeBigEndianUint32( digest + 12, H3 );\n"
+	" storeBigEndianUint32( digest + 16, H4 );\n"
+	" return digest;\n"
+    "}\n";
+
+
 MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
     mHasFocus = false;
     mWindow = engine::WindowHnd();
@@ -39,7 +194,12 @@ MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
     mGameStateManager = gsm;
 }
 
-MainMenu::~MainMenu(){}
+MainMenu::~MainMenu(){
+    while (!mCodeStreamTextures.empty()){
+        SDL_DestroyTexture(mCodeStreamTextures.back());
+        mCodeStreamTextures.pop_back();
+    }
+}
 
 
 
@@ -70,9 +230,10 @@ void MainMenu::start(){
         throw std::runtime_error("Failed to obtain Writer object.");
     }
     mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 32);
-    //mWriter->defineFont("default", "assets/fonts/larabiefontrg.ttf", 32);
     mWriter->setPenColor(64, 255, 64);
 
+    // Now split that really big const string defined at the top of this file into vector.
+    splitString(CODE_STREAM_TEXT, "\n", &mCodeStreamList);
     mHasFocus = true;
 }
 
@@ -96,11 +257,62 @@ void MainMenu::render(){
     if (mHasFocus){
         if (mWindow.IsValid()){
             mWindow->clear();
+
+            mWindow->setPenColor(0, 255, 0);
+            //mWindow->drawLine(0, 5, 200, 5);
             //mTexBackground->render(0, 0);
-            if (mWriter.IsValid()){
-                mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
-            }
+            //if (mWriter.IsValid()){
+            //    mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
+            //}
+
+            renderCodeStream();
             mWindow->present();
+        }
+    }
+}
+
+// PRIVATE
+void MainMenu::renderCodeStream(){
+    SDL_Rect dst;
+    dst.x = 10;
+    dst.y = 10;
+
+    if (mWindow.IsValid() && mWriter.IsValid()){
+        int fontHeight = mWriter->getFontPixelHeight("default");
+        int viewHeight = 0;
+        mWindow->getLogicalRendererSize(nullptr, &viewHeight);
+
+        if (mCodeStreamList.size() > 0 && fontHeight > 0 && viewHeight > 0 && viewHeight > fontHeight){
+            int maxViewableLines = viewHeight/fontHeight;
+
+            // 1) Build the new string texture and store it.
+            SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+            mCodeStreamIndex++;
+            if (mCodeStreamIndex >= mCodeStreamList.size())
+                mCodeStreamIndex = 0;
+
+            if (tex != nullptr){
+                // If we already have maxViewableLines of textures, destroy and remove the oldest one.
+                while (mCodeStreamTextures.size() >= maxViewableLines){
+                    SDL_DestroyTexture(mCodeStreamTextures.front());
+                    mCodeStreamTextures.erase(mCodeStreamTextures.begin());
+                }
+                mCodeStreamTextures.push_back(tex);
+            }
+
+            // 2) Render the string textures we have!
+            for (int index = 0; index < mCodeStreamTextures.size(); index++){
+                SDL_Texture* t = mCodeStreamTextures.at(index);
+                SDL_Rect src;
+                src.x = 0;
+                src.y = 0;
+                SDL_QueryTexture(t, nullptr, nullptr, &src.w, &src.h);
+                dst.w = src.w;
+                dst.h = src.h;
+
+                mWindow->render(t, &src, &dst);
+                dst.y += fontHeight;
+            }
         }
     }
 }
@@ -138,3 +350,19 @@ void MainMenu::poll(){
         } // end switch
     } // end of message processing
 }
+
+
+void MainMenu::splitString(std::string s, std::string delimiter, std::vector<std::string> *container){
+    // Code modified from original source supplied by "Vincenzo Pii" at
+    // http://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
+    size_t pos = 0;
+    while ((pos = s.find(delimiter)) != std::string::npos) {
+        container->push_back(s.substr(0, pos));
+        s.erase(0, pos + delimiter.length());
+    }
+    // This will either store the tailing remanents of the given string, or the whole string (if the delimiter was not found at all)
+    container->push_back(s);
+}
+
+
+
