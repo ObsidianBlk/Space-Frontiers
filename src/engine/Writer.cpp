@@ -100,11 +100,16 @@ namespace engine{
         // Since textToTexture checks the validity of the given WindowHnd object itself, we don't need to
         // check it's validity here... we only need to check that we have a texture.
         if (t != nullptr){
+            SDL_Rect src;
             SDL_Rect pos;
+            src.x = 0;
+            src.y = 0;
+            SDL_QueryTexture(t, NULL, NULL, &src.w, &src.h);
             pos.x = x;
             pos.y = y;
-            SDL_QueryTexture(t, NULL, NULL, &pos.w, &pos.h);
-            win->drawTo(t, &pos);
+            pos.w = src.w;
+            pos.h = src.h;
+            win->render(t, nullptr, &pos);
             SDL_DestroyTexture(t);
         }
     }

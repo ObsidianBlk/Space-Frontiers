@@ -122,14 +122,14 @@ void Texture::setWindow(WindowHnd win){
     }
 }
 
-void Texture::getTextureBounds(int *width, int *height){
+void Texture::queryInfo(Uint32 *fmt, int *access, int *width, int *height){
     if (mTexture.get() != 0){
-        SDL_QueryTexture(mTexture.get(), NULL, NULL, width, height);
+        SDL_QueryTexture(mTexture.get(), fmt, access, width, height);
     }
 }
 
 
-void Texture::draw(int x, int y, SDL_Rect* clip){
+void Texture::render(int x, int y, SDL_Rect* clip){
     if (prepare()){
         if (mTexWindow.IsValid()){
             SDL_Rect pos;
@@ -141,9 +141,22 @@ void Texture::draw(int x, int y, SDL_Rect* clip){
             } else {
                 SDL_QueryTexture(mTexture.get(), NULL, NULL, &pos.w, &pos.h);
             }
-            mTexWindow->drawTo(mTexture.get(), &pos, clip);
+            mTexWindow->render(mTexture.get(), &pos, clip);
         }
     }
+}
+
+void Texture::render(const SDL_Rect* src, const SDL_Rect* dst, const double& angle, const SDL_Point* center, const SDL_RendererFlip& flip){
+    if (prepare() && mTexWindow.IsValid()){
+        double a = angle;
+        SDL_RendererFlip f = flip;
+        mTexWindow->render(mTexture.get(), src, dst, angle, center, flip);
+        //mTexWindow->render(mTexture.get(), &(*src), &(*dst), angle, &(*center), flip);
+    }
+}
+
+void Texture::render(const TextureRenderState *state, const SDL_Rect* dst){
+    this->render(&state->rect, dst, state->angle, &state->center, state->flip);
 }
 
 

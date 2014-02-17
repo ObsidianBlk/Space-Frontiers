@@ -45,7 +45,8 @@ class Window
     public:
         Window(std::string title, int x, int y, int w, int h, Uint32 flags=0, Uint32 rflags=SDL_RENDERER_ACCELERATED);
 
-        void drawTo(SDL_Texture *tex, SDL_Rect *dstRect, SDL_Rect *clip = NULL, float angle = 0.0, int xPivot = 0, int yPivot = 0, SDL_RendererFlip flip = SDL_FLIP_NONE);
+        void render(SDL_Texture *tex, const SDL_Rect *src, const SDL_Rect *dst);
+        void render(SDL_Texture *tex, const SDL_Rect* src, const SDL_Rect* dst, const double& angle, const SDL_Point* center, const SDL_RendererFlip& flip);
 
         void setLogicalRendererSize(int w, int h);
         void setDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a=255);
@@ -62,6 +63,7 @@ class Window
         SDL_Texture* textureFromSurface(SDL_Surface* surf);
 
         Uint32 getPixelFormat();
+        void getLogicalRendererSize(int *w, int *h);
 
         int getDisplayIndex();
         void getDisplayMode(SDL_DisplayMode *mode);

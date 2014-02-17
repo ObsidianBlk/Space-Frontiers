@@ -25,6 +25,7 @@
 * THE SOFTWARE.
 */
 
+#include <vector>
 #include <memory>
 //#include <boost/shared_ptr.hpp>
 //#include <boost/weak_ptr.hpp>
@@ -49,6 +50,22 @@ typedef std::shared_ptr<Texture> TexturePtr;
 typedef Handler<Texture> TextureHnd;
 
 
+struct TextureRenderState{
+    SDL_Rect rect;
+    double angle;
+    SDL_Point center;
+    SDL_RendererFlip flip;
+
+    TextureRenderState(){
+        rect.x = rect.y = rect.w = rect.h = 0;
+        center.x = center.y = 0;
+        angle = 0.0;
+        flip = SDL_FLIP_NONE;
+    }
+    //TODO: Extend this with the operator=, operator==, and operator!= methods.
+};
+
+
 class Texture : public Resource
 {
     public:
@@ -63,11 +80,18 @@ class Texture : public Resource
         WindowHnd getWindow();
         void setWindow(WindowHnd win);
 
-        void getTextureBounds(int *width, int *height);
+        void queryInfo(Uint32 *fmt, int *access, int *width, int *height);
 
-        void draw(int x, int y, SDL_Rect* clip=nullptr);
+        void render(int x, int y, SDL_Rect* clip=nullptr);
+        void render(const SDL_Rect* src, const SDL_Rect* dst, const double& angle, const SDL_Point* center, const SDL_RendererFlip& flip);
+        void render(const TextureRenderState *state, const SDL_Rect* dst);
 
     protected:
+        // TOFO: Decide... Make this part of the Texture class or a child class.
+        typedef std::vector<TextureRenderState> TexRenderStateList;
+        typedef std::vector<TextureRenderState>::iterator TexRenderStateIter;
+        TexRenderStateList mRenderStates;
+
         SDL_TexturePtr mTexture;
         SDL_SurfacePtr mSurface;
         WindowHnd mTexWindow;

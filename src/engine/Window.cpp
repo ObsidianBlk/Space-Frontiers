@@ -47,13 +47,18 @@ Window::Window(std::string title, int x, int y, int w, int h, Uint32 wflags, Uin
         throw std::runtime_error("SDL failed to create window renderer.");
 }
 
-void Window::drawTo(SDL_Texture *tex, SDL_Rect *dstRect, SDL_Rect *clip, float angle, int xPivot, int yPivot, SDL_RendererFlip flip){
-    xPivot += dstRect->w/2;
-    yPivot += dstRect->h/2;
-    SDL_Point pivot = {xPivot, yPivot};
+void Window::render(SDL_Texture *tex, const SDL_Rect *src, const SDL_Rect *dst){
+    SDL_Renderer *r = mRenderer.get();
+    if (r != 0){
+        SDL_RenderCopy(r, tex, src, dst);
+    }
+}
 
-    //Draw the texture
-    SDL_RenderCopyEx(mRenderer.get(), tex, clip, dstRect, angle, &pivot, flip);
+void Window::render(SDL_Texture *tex, const SDL_Rect* src, const SDL_Rect* dst, const double& angle, const SDL_Point* center, const SDL_RendererFlip& flip){
+    SDL_Renderer *r = mRenderer.get();
+    if (r != 0){
+        SDL_RenderCopyEx(r, tex, src, dst, angle, center, flip);
+    }
 }
 
 void Window::setLogicalRendererSize(int w, int h){
@@ -104,6 +109,13 @@ Uint32 Window::getPixelFormat(){
         return SDL_GetWindowPixelFormat(w);
     }
     return 0;
+}
+
+void Window::getLogicalRendererSize(int *w, int *h){
+    SDL_Renderer *r = mRenderer.get();
+    if (r != 0){
+        SDL_RenderGetLogicalSize(r, w, h);
+    }
 }
 
 int Window::getDisplayIndex(){

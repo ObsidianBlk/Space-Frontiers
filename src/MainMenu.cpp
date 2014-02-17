@@ -66,10 +66,11 @@ void MainMenu::start(){
     }*/
 
     mWriter = engine::Writer::getHandle();
-    if (mWriter.IsValid()){
+    if (!mWriter.IsValid()){
         throw std::runtime_error("Failed to obtain Writer object.");
     }
-    mWriter->defineFont("default", "assets/fonts/larabiefontrg.ttf", 32);
+    mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 32);
+    //mWriter->defineFont("default", "assets/fonts/larabiefontrg.ttf", 32);
     mWriter->setPenColor(64, 255, 64);
 
     mHasFocus = true;
@@ -93,9 +94,9 @@ void MainMenu::update(){
 
 void MainMenu::render(){
     if (mHasFocus){
-        if (mWindow.IsValid() && mTexBackground.IsValid()){
+        if (mWindow.IsValid()){
             mWindow->clear();
-            mTexBackground->draw(0, 0);
+            //mTexBackground->render(0, 0);
             if (mWriter.IsValid()){
                 mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
             }
