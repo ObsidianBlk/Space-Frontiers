@@ -195,10 +195,7 @@ MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
 }
 
 MainMenu::~MainMenu(){
-    while (!mCodeStreamTextures.empty()){
-        SDL_DestroyTexture(mCodeStreamTextures.back());
-        mCodeStreamTextures.pop_back();
-    }
+    clearCodeStreamTextures();
 }
 
 
@@ -283,25 +280,43 @@ void MainMenu::renderCodeStream(){
         mWindow->getLogicalRendererSize(nullptr, &viewHeight);
 
         if (mCodeStreamList.size() > 0 && fontHeight > 0 && viewHeight > 0 && viewHeight > fontHeight){
-            if (!mCodeStreamTimer.started()){mCodeStreamTimer.start();}
-            if (mCodeStreamTimer.ticks() > 50){ // Update the stream 50x a second
+            if (!mCodeStreamTimer.started()){mCodeStreamTimer.start(50);} // Update the stream 50x a second
+            int loops = mCodeStreamTimer.steps();
+            if (loops > 0){
                 int maxViewableLines = viewHeight/fontHeight;
 
-                // 1) Build the new string texture and store it.
-                SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
-                mCodeStreamIndex++;
-                if (mCodeStreamIndex >= mCodeStreamList.size())
-                    mCodeStreamIndex = 0;
+                // Ok... now... I'm managing an EXTREAM case where there could be a HUGE delay between calls.
+                if (loops > maxViewableLines){
+                    mCodeStreamIndex = maxViewableLines - ((mCodeStreamIndex+loops)%maxViewableLines);
+                    clearCodeStreamTextures();
+                    for (int i = 0; i < maxViewableLines; i++){
+                        SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+                        mCodeStreamIndex++;
+                        if (mCodeStreamIndex >= mCodeStreamList.size())
+                            mCodeStreamIndex = 0;
 
-                if (tex != nullptr){
-                    // If we already have maxViewableLines of textures, destroy and remove the oldest one.
-                    while (mCodeStreamTextures.size() >= maxViewableLines){
-                        SDL_DestroyTexture(mCodeStreamTextures.front());
-                        mCodeStreamTextures.erase(mCodeStreamTextures.begin());
+                        if (tex != nullptr){
+                            mCodeStreamTextures.push_back(tex);
+                        }
                     }
-                    mCodeStreamTextures.push_back(tex);
+                } else {
+                    for (int i = 0; i < loops; i++){
+                        // 1) Build the new string texture and store it.
+                        SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+                        mCodeStreamIndex++;
+                        if (mCodeStreamIndex >= mCodeStreamList.size())
+                            mCodeStreamIndex = 0;
+
+                        if (tex != nullptr){
+                            // If we already have maxViewableLines of textures, destroy and remove the oldest one.
+                            while (mCodeStreamTextures.size() >= maxViewableLines){
+                                SDL_DestroyTexture(mCodeStreamTextures.front());
+                                mCodeStreamTextures.erase(mCodeStreamTextures.begin());
+                            }
+                            mCodeStreamTextures.push_back(tex);
+                        }
+                    }
                 }
-                mCodeStreamTimer.restart();
             }
 
             // 2) Render the string textures we have!
@@ -318,6 +333,14 @@ void MainMenu::renderCodeStream(){
                 dst.y += fontHeight;
             }
         }
+    }
+}
+
+// PRIVATE
+void MainMenu::clearCodeStreamTextures(){
+    while (!mCodeStreamTextures.empty()){
+        SDL_DestroyTexture(mCodeStreamTextures.back());
+        mCodeStreamTextures.pop_back();
     }
 }
 

@@ -37,20 +37,28 @@ class Timer
         /**
         * Resets the timer's starting value. If the timer isn't already started, this has the same effect as calling the start() method.
         */
+        void restart(int stepTime);
         void restart();
+        void start(int stepTime);
         void start();
         int stop();
         int pause();
         void resume();
 
         int ticks();
+        int steps();
 
+        int getDefinedStepTime();
         bool started();
         bool paused();
 
     private:
         int mPausedTicks;
         int mStartTicks;
+
+        int mStepTime;  // # milliseconds to consider to be 1 step.
+        int mStepTicks; // Timestamp last time steps were checked.
+        int mAccumulatedTicks; // A collections of ticks between steps, adjusted by passed steps.
 };
 
 #endif // TIMER_H

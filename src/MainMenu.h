@@ -77,6 +77,7 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         void splitString(std::string s, std::string delimiter, std::vector<std::string> *container);
 
         void renderCodeStream();
+        void clearCodeStreamTextures();
 };
 
 #endif // MAINMENU_H

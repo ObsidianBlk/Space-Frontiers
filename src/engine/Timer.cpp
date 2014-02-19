@@ -26,16 +26,38 @@
 
 #include "Timer.h"
 
-Timer::Timer(): mPausedTicks(0), mStartTicks(0){}
+Timer::Timer(): mPausedTicks(0), mStartTicks(0), mStepTime(0), mAccumulatedTicks(0), mStepTicks(0){}
 
 void Timer::restart(){
     mStartTicks = SDL_GetTicks();
     mPausedTicks = 0;
+    mAccumulatedTicks = 0;
+    mStepTicks = 0;
+}
+
+void Timer::restart(int stepTime){
+    restart();
+    mStepTime = 0;
+    if (stepTime > 0){
+        mStepTime = stepTime;
+    }
 }
 
 void Timer::start(){
     if (mStartTicks == 0){
         mStartTicks = SDL_GetTicks();
+        mAccumulatedTicks = 0;
+        mStepTicks = 0;
+    }
+}
+
+void Timer::start(int stepTime){
+    if (mStartTicks == 0){
+        mStepTime = 0;
+        if (stepTime > 0){
+            mStepTime = stepTime;
+        }
+        start();
     }
 }
 
@@ -43,6 +65,8 @@ int Timer::stop(){
     int t = ticks();
     mStartTicks = 0;
     mPausedTicks = 0;
+    mAccumulatedTicks = 0;
+    mStepTicks = 0;
     return t;
 }
 
@@ -68,6 +92,26 @@ int Timer::ticks(){
         return SDL_GetTicks() - mStartTicks;
     }
     return 0;
+}
+
+
+int Timer::steps(){
+    if (mStartTicks > 0 && mPausedTicks == 0 && mStepTime > 0){
+        int t = ticks();
+        mAccumulatedTicks += t - mStepTicks;
+        mStepTicks = t;
+
+        if (mAccumulatedTicks >= mStepTime){
+            int count = mAccumulatedTicks/mStepTime;
+            mAccumulatedTicks -= count*mStepTime;
+            return count;
+        }
+    }
+    return 0;
+}
+
+int Timer::getDefinedStepTime(){
+    return mStepTime;
 }
 
 bool Timer::started(){
