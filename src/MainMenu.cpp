@@ -283,21 +283,25 @@ void MainMenu::renderCodeStream(){
         mWindow->getLogicalRendererSize(nullptr, &viewHeight);
 
         if (mCodeStreamList.size() > 0 && fontHeight > 0 && viewHeight > 0 && viewHeight > fontHeight){
-            int maxViewableLines = viewHeight/fontHeight;
+            if (!mCodeStreamTimer.started()){mCodeStreamTimer.start();}
+            if (mCodeStreamTimer.ticks() > 50){ // Update the stream 50x a second
+                int maxViewableLines = viewHeight/fontHeight;
 
-            // 1) Build the new string texture and store it.
-            SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
-            mCodeStreamIndex++;
-            if (mCodeStreamIndex >= mCodeStreamList.size())
-                mCodeStreamIndex = 0;
+                // 1) Build the new string texture and store it.
+                SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+                mCodeStreamIndex++;
+                if (mCodeStreamIndex >= mCodeStreamList.size())
+                    mCodeStreamIndex = 0;
 
-            if (tex != nullptr){
-                // If we already have maxViewableLines of textures, destroy and remove the oldest one.
-                while (mCodeStreamTextures.size() >= maxViewableLines){
-                    SDL_DestroyTexture(mCodeStreamTextures.front());
-                    mCodeStreamTextures.erase(mCodeStreamTextures.begin());
+                if (tex != nullptr){
+                    // If we already have maxViewableLines of textures, destroy and remove the oldest one.
+                    while (mCodeStreamTextures.size() >= maxViewableLines){
+                        SDL_DestroyTexture(mCodeStreamTextures.front());
+                        mCodeStreamTextures.erase(mCodeStreamTextures.begin());
+                    }
+                    mCodeStreamTextures.push_back(tex);
                 }
-                mCodeStreamTextures.push_back(tex);
+                mCodeStreamTimer.restart();
             }
 
             // 2) Render the string textures we have!

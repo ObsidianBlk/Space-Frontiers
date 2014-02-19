@@ -38,6 +38,7 @@
 #include "engine/WindowManager.h"
 #include "engine/TextureManager.h"
 #include "engine/Writer.h"
+#include "engine/Timer.h"
 
 
 class MainMenu : public engine::IState, public engine::IUpdateable, public engine::IRenderable
@@ -68,6 +69,7 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         std::vector<std::string> mCodeStreamList;
         int mCodeStreamIndex;
         std::vector<SDL_Texture*> mCodeStreamTextures;
+        Timer mCodeStreamTimer;
 
 
         // NOTE: This method will die doon!

@@ -24,5 +24,7 @@ set(engine_source_files
     Handler.h
     Writer.h
     Writer.cpp
+    Timer.h
+    Timer.cpp
 )
 add_library(engine ${engine_source_files})
