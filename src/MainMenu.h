@@ -65,6 +65,8 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         engine::WindowHnd mWindow;
         engine::TextureHnd mTexBackground;
         bool mHasFocus;
+        int mLogicalRenderWidth;
+        int mLogicalRenderHeight;
 
         std::vector<std::string> mCodeStreamList;
         int mCodeStreamIndex;
@@ -76,7 +78,8 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         void poll();
         void splitString(std::string s, std::string delimiter, std::vector<std::string> *container);
 
-        void renderCodeStream();
+        void updateCodeStream(int steps, int viewHeight);
+        void renderCodeStream(int x, int y, int viewWidth, int viewHeight);
         void clearCodeStreamTextures();
 };
 

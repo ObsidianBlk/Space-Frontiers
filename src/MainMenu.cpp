@@ -183,6 +183,9 @@ const std::string MainMenu::CODE_STREAM_TEXT = "#ifndef SHA1_HEADER\n"
 
 MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
     mHasFocus = false;
+    mLogicalRenderWidth = 0;
+    mLogicalRenderHeight = 0;
+    mCodeStreamIndex = 0;
     mWindow = engine::WindowHnd();
     mTexBackground = engine::TextureHnd();
 
@@ -209,7 +212,7 @@ void MainMenu::start(){
     if (!mWindow.IsValid()){
         throw std::runtime_error("Failed to obtain window.");
     }
-
+    mWindow->getLogicalRendererSize(&mLogicalRenderWidth, &mLogicalRenderHeight);
 
     // Second, let's get or add the textures we need.
     /*engine::TextureManager* tm = engine::TextureManager::getInstance();
@@ -226,7 +229,7 @@ void MainMenu::start(){
     if (!mWriter.IsValid()){
         throw std::runtime_error("Failed to obtain Writer object.");
     }
-    mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 32);
+    mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 12);
     mWriter->setPenColor(64, 255, 64);
 
     // Now split that really big const string defined at the top of this file into vector.
@@ -247,91 +250,98 @@ void MainMenu::looseFocus(){
 void MainMenu::update(){
     if (mHasFocus){
         poll();
+
+        if (!mCodeStreamTimer.started()){mCodeStreamTimer.start(100);}
+        updateCodeStream(mCodeStreamTimer.steps(), 200);
     }
 }
 
 void MainMenu::render(){
-    if (mHasFocus){
-        if (mWindow.IsValid()){
-            mWindow->clear();
+    if (mHasFocus && mWindow.IsValid()){
+        mWindow->clear();
 
-            mWindow->setPenColor(0, 255, 0);
-            //mWindow->drawLine(0, 5, 200, 5);
-            //mTexBackground->render(0, 0);
-            //if (mWriter.IsValid()){
-            //    mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
-            //}
+        mWindow->setPenColor(0, 255, 0);
+        //mWindow->drawLine(0, 5, 200, 5);
+        //mTexBackground->render(0, 0);
+        //if (mWriter.IsValid()){
+        //    mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
+        //}
 
-            renderCodeStream();
-            mWindow->present();
+        renderCodeStream(10, 10, 200, 200);
+        mCodeStreamUpdated = false;
+        mWindow->present();
+    }
+}
+
+
+// PRIVATE
+void MainMenu::updateCodeStream(int steps, int viewHeight){
+    if (steps > 0 && mWindow.IsValid() && mWriter.IsValid()){
+        int fontHeight = mWriter->getFontPixelHeight("default");
+
+        if (mCodeStreamList.size() > 0 && fontHeight > 0 && viewHeight > 0 && viewHeight > fontHeight){
+            int maxViewableLines = viewHeight/fontHeight;
+
+            // Ok... now... I'm managing an EXTREAM case where there could be a HUGE delay between calls.
+            if (steps > maxViewableLines){
+                mCodeStreamIndex = maxViewableLines - ((mCodeStreamIndex+steps)%maxViewableLines);
+                clearCodeStreamTextures();
+                for (int i = 0; i < maxViewableLines; i++){
+                    SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+                    mCodeStreamIndex++;
+                    if (mCodeStreamIndex >= mCodeStreamList.size())
+                        mCodeStreamIndex = 0;
+
+                    if (tex != nullptr){
+                        mCodeStreamTextures.push_back(tex);
+                    }
+                }
+            } else {
+                for (int i = 0; i < steps; i++){
+                    // Build the new string texture and store it.
+                    SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+                    mCodeStreamIndex++;
+                    if (mCodeStreamIndex >= mCodeStreamList.size())
+                        mCodeStreamIndex = 0;
+
+                    if (tex != nullptr){
+                        // If we already have maxViewableLines of textures, destroy and remove the oldest one.
+                        while (mCodeStreamTextures.size() >= maxViewableLines){
+                            SDL_DestroyTexture(mCodeStreamTextures.front());
+                            mCodeStreamTextures.erase(mCodeStreamTextures.begin());
+                        }
+                        mCodeStreamTextures.push_back(tex);
+                    }
+                }
+            }
         }
     }
 }
 
 // PRIVATE
-void MainMenu::renderCodeStream(){
+void MainMenu::renderCodeStream(int x, int y, int viewWidth, int viewHeight){
     SDL_Rect dst;
-    dst.x = 10;
-    dst.y = 10;
+    dst.x = x;
+    dst.y = y;
 
-    if (mWindow.IsValid() && mWriter.IsValid()){
+    if (mWindow.IsValid() && mWriter.IsValid() && mCodeStreamTextures.size() > 0){
         int fontHeight = mWriter->getFontPixelHeight("default");
-        int viewHeight = 0;
-        mWindow->getLogicalRendererSize(nullptr, &viewHeight);
 
-        if (mCodeStreamList.size() > 0 && fontHeight > 0 && viewHeight > 0 && viewHeight > fontHeight){
-            if (!mCodeStreamTimer.started()){mCodeStreamTimer.start(50);} // Update the stream 50x a second
-            int loops = mCodeStreamTimer.steps();
-            if (loops > 0){
-                int maxViewableLines = viewHeight/fontHeight;
-
-                // Ok... now... I'm managing an EXTREAM case where there could be a HUGE delay between calls.
-                if (loops > maxViewableLines){
-                    mCodeStreamIndex = maxViewableLines - ((mCodeStreamIndex+loops)%maxViewableLines);
-                    clearCodeStreamTextures();
-                    for (int i = 0; i < maxViewableLines; i++){
-                        SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
-                        mCodeStreamIndex++;
-                        if (mCodeStreamIndex >= mCodeStreamList.size())
-                            mCodeStreamIndex = 0;
-
-                        if (tex != nullptr){
-                            mCodeStreamTextures.push_back(tex);
-                        }
-                    }
-                } else {
-                    for (int i = 0; i < loops; i++){
-                        // 1) Build the new string texture and store it.
-                        SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
-                        mCodeStreamIndex++;
-                        if (mCodeStreamIndex >= mCodeStreamList.size())
-                            mCodeStreamIndex = 0;
-
-                        if (tex != nullptr){
-                            // If we already have maxViewableLines of textures, destroy and remove the oldest one.
-                            while (mCodeStreamTextures.size() >= maxViewableLines){
-                                SDL_DestroyTexture(mCodeStreamTextures.front());
-                                mCodeStreamTextures.erase(mCodeStreamTextures.begin());
-                            }
-                            mCodeStreamTextures.push_back(tex);
-                        }
-                    }
-                }
+        // Render the string textures we have!
+        for (int index = 0; index < mCodeStreamTextures.size(); index++){
+            SDL_Texture* t = mCodeStreamTextures.at(index);
+            SDL_Rect src;
+            src.x = 0;
+            src.y = 0;
+            SDL_QueryTexture(t, nullptr, nullptr, &src.w, &src.h);
+            if (src.w > viewWidth){
+                src.w = viewWidth;
             }
+            dst.w = src.w;
+            dst.h = src.h;
 
-            // 2) Render the string textures we have!
-            for (int index = 0; index < mCodeStreamTextures.size(); index++){
-                SDL_Texture* t = mCodeStreamTextures.at(index);
-                SDL_Rect src;
-                src.x = 0;
-                src.y = 0;
-                SDL_QueryTexture(t, nullptr, nullptr, &src.w, &src.h);
-                dst.w = src.w;
-                dst.h = src.h;
-
-                mWindow->render(t, &src, &dst);
-                dst.y += fontHeight;
-            }
+            mWindow->render(t, &src, &dst);
+            dst.y += fontHeight;
         }
     }
 }
