@@ -51,6 +51,7 @@ Application::~Application()
 
 void Application::run(){
     while (not mGameStateManager->empty()){
+        mGameStateManager->poll();
         mGameStateManager->update();
         mGameStateManager->render();
     }

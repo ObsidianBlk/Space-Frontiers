@@ -249,8 +249,6 @@ void MainMenu::looseFocus(){
 
 void MainMenu::update(){
     if (mHasFocus){
-        poll();
-
         if (!mCodeStreamTimer.started()){mCodeStreamTimer.start(100);}
         updateCodeStream(mCodeStreamTimer.steps(), 200);
     }
@@ -268,7 +266,6 @@ void MainMenu::render(){
         //}
 
         renderCodeStream(10, 10, 200, 200);
-        mCodeStreamUpdated = false;
         mWindow->present();
     }
 }
@@ -346,46 +343,40 @@ void MainMenu::renderCodeStream(int x, int y, int viewWidth, int viewHeight){
     }
 }
 
+
+bool MainMenu::poll(SDL_Event event){
+    // check for messages
+    switch (event.type)
+    {
+        // exit if the window is closed
+    case SDL_QUIT:
+        if (mGameStateManager.IsValid()){
+            // THIS state should have focus when this occures, we we're dropping ourselved here!
+            mGameStateManager->dropState();
+        }
+        return true;
+
+        // check for keypresses
+    case SDL_KEYDOWN:
+        {
+            // exit if ESCAPE is pressed
+            if (event.key.keysym.sym == SDLK_ESCAPE)
+                if (mGameStateManager.IsValid()){
+                    // THIS state should have focus when this occures, we we're dropping ourselved here!
+                    mGameStateManager->dropState();
+                }
+            return true;
+        }
+    } // end switch
+    return false;
+}
+
 // PRIVATE
 void MainMenu::clearCodeStreamTextures(){
     while (!mCodeStreamTextures.empty()){
         SDL_DestroyTexture(mCodeStreamTextures.back());
         mCodeStreamTextures.pop_back();
     }
-}
-
-
-
-// This is soon to DIE!
-void MainMenu::poll(){
-    // message processing loop
-    SDL_Event event;
-         while (SDL_PollEvent(&event))
-    {
-        // check for messages
-        switch (event.type)
-        {
-            // exit if the window is closed
-        case SDL_QUIT:
-            if (mGameStateManager.IsValid()){
-                // THIS state should have focus when this occures, we we're dropping ourselved here!
-                mGameStateManager->dropState();
-            }
-            break;
-
-            // check for keypresses
-        case SDL_KEYDOWN:
-            {
-                // exit if ESCAPE is pressed
-                if (event.key.keysym.sym == SDLK_ESCAPE)
-                    if (mGameStateManager.IsValid()){
-                        // THIS state should have focus when this occures, we we're dropping ourselved here!
-                        mGameStateManager->dropState();
-                    }
-                break;
-            }
-        } // end switch
-    } // end of message processing
 }
 
 

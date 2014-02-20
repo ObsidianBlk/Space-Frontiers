@@ -34,6 +34,7 @@
 #include "engine/States.h"
 #include "engine/Updateables.h"
 #include "engine/Renderables.h"
+#include "engine/IOStates.h"
 #include "engine/GameStateManager.h"
 #include "engine/WindowManager.h"
 #include "engine/TextureManager.h"
@@ -41,7 +42,7 @@
 #include "engine/Timer.h"
 
 
-class MainMenu : public engine::IState, public engine::IUpdateable, public engine::IRenderable
+class MainMenu : public engine::IState, public engine::IIOState, public engine::IUpdateable, public engine::IRenderable
 {
     public:
         MainMenu(engine::GameStateManagerHnd gsm);
@@ -55,6 +56,7 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
 
         void update();
         void render();
+        bool poll(SDL_Event event);
 
     private:
         static const std::string TEXTURE_BACKGROUND_NAME;
@@ -73,9 +75,6 @@ class MainMenu : public engine::IState, public engine::IUpdateable, public engin
         std::vector<SDL_Texture*> mCodeStreamTextures;
         Timer mCodeStreamTimer;
 
-
-        // NOTE: This method will die doon!
-        void poll();
         void splitString(std::string s, std::string delimiter, std::vector<std::string> *container);
 
         void updateCodeStream(int steps, int viewHeight);

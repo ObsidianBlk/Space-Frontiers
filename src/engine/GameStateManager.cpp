@@ -43,7 +43,7 @@ void GameStateManager::addState(StatePtr s){
         cstate->looseFocus();
     }
     mStateStack.push_back(s);
-    AddUpdateableOrRenderable(s.get());
+    AddStateType(s.get());
     s->start();
 }
 
@@ -56,14 +56,14 @@ void GameStateManager::swapState(StatePtr s){
 
 void GameStateManager::elevateState(StatePtr s){
     RemoveFromStack(s); // If s is not already on the stack, this does nothing.
-    RebuildUpdateablesAndRenderables();
+    RebuildStateTypes();
     addState(s);
 }
 
 void GameStateManager::dropState(){
     if (!mStateStack.empty()){
         mStateStack.at(mStateStack.size()-1)->stop();
-        DropUpdateableOrRenderable(mStateStack.at(mStateStack.size()-1).get());
+        DropStateType(mStateStack.at(mStateStack.size()-1).get());
         mStateStack.pop_back();
     }
 }
@@ -104,6 +104,16 @@ void GameStateManager::render(){
     }
 }
 
+void GameStateManager::poll(){
+    SDL_Event event;
+    while (SDL_PollEvent(&event)){
+        for (size_t index = 0; index < mIOStates.size(); index++){
+            if (mIOStates.at(index)->poll(event))
+                break; // If the states returns true on the poll call, then this event is handled. No need to loop through all states.
+        }
+    }
+}
+
 // -----------------------------------------------------------------------------
 
 bool GameStateManager::RemoveFromStack(StatePtr &s){
@@ -116,7 +126,7 @@ bool GameStateManager::RemoveFromStack(StatePtr &s){
     return false;
 }
 
-void GameStateManager::AddUpdateableOrRenderable(IState* state){
+void GameStateManager::AddStateType(IState* state){
     IRenderable *r = dynamic_cast<IRenderable *>(state);
     if(r){
         mRenderables.push_back(r);
@@ -126,10 +136,15 @@ void GameStateManager::AddUpdateableOrRenderable(IState* state){
     if(u){
         mUpdateables.push_back(u);
     }
+
+    IIOState *i = dynamic_cast<IIOState *>(state);
+    if (i){
+        mIOStates.push_back(i);
+    }
 }
 
 
-void GameStateManager::DropUpdateableOrRenderable(IState* state){
+void GameStateManager::DropStateType(IState* state){
     IRenderable *r = dynamic_cast<IRenderable *>(state);
     if(r){
         mRenderables.pop_back();
@@ -139,15 +154,21 @@ void GameStateManager::DropUpdateableOrRenderable(IState* state){
     if(u){
         mUpdateables.pop_back();
     }
+
+    IIOState *i = dynamic_cast<IIOState *>(state);
+    if (i){
+        mIOStates.pop_back();
+    }
 }
 
-void GameStateManager::RebuildUpdateablesAndRenderables(){
+void GameStateManager::RebuildStateTypes(){
     mRenderables.clear();
     mUpdateables.clear();
+    mIOStates.clear();
 
     if (!mStateStack.empty()){
         for (size_t index = 0; index < mStateStack.size(); index++){
-            AddUpdateableOrRenderable(mStateStack.at(index).get());
+            AddStateType(mStateStack.at(index).get());
         }
     }
 }

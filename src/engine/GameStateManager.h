@@ -33,6 +33,7 @@
 #include "Handler.h"
 #include "StateManager.h"
 #include "Updateables.h"
+#include "IOStates.h"
 #include "Renderables.h"
 #include "States.h"
 
@@ -91,6 +92,7 @@ class GameStateManager : public IStateManager, public IUpdateable, public IRende
         */
         unsigned int size();
 
+        void poll();
         void update();
         void render();
 
@@ -104,15 +106,18 @@ class GameStateManager : public IStateManager, public IUpdateable, public IRende
         typedef std::vector<IRenderable *> RenderableVec;
         RenderableVec mRenderables;
 
+        typedef std::vector<IIOState *> IOStateVec;
+        IOStateVec mIOStates;
+
 
         /**
         * If s is found on the existing stack, it will remove s from the stack and return true. If s is not on the stack, false is returned.
         */
         bool RemoveFromStack(StatePtr &s);
 
-        void AddUpdateableOrRenderable(IState* state);
-        void DropUpdateableOrRenderable(IState* state);
-        void RebuildUpdateablesAndRenderables();
+        void AddStateType(IState* state);
+        void DropStateType(IState* state);
+        void RebuildStateTypes();
 };
 
 } // End namespace "engine"
