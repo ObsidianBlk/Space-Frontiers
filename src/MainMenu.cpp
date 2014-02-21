@@ -51,7 +51,7 @@ const std::string MainMenu::CODE_STREAM_TEXT = "#ifndef SHA1_HEADER\n"
     "   static void SHA1::hexPrinter( unsigned char* c, int l );\n"
     " };\n"
     "#define SHA1_HEADER\n"
-    "#endif\n\n\n"
+    "#endif\n"
     "void SHA1::hexPrinter( unsigned char* c, int l )\n"
     "{\n"
 	" assert( c );\n"
@@ -229,7 +229,7 @@ void MainMenu::start(){
     if (!mWriter.IsValid()){
         throw std::runtime_error("Failed to obtain Writer object.");
     }
-    mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 12);
+    mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 24);
     mWriter->setPenColor(64, 255, 64);
 
     // Now split that really big const string defined at the top of this file into vector.
@@ -249,8 +249,8 @@ void MainMenu::looseFocus(){
 
 void MainMenu::update(){
     if (mHasFocus){
-        if (!mCodeStreamTimer.started()){mCodeStreamTimer.start(100);}
-        updateCodeStream(mCodeStreamTimer.steps(), 200);
+        if (!mCodeStreamTimer.started()){mCodeStreamTimer.start(50);}
+        updateCodeStream(mCodeStreamTimer.steps(), 800);
     }
 }
 
@@ -265,7 +265,7 @@ void MainMenu::render(){
         //    mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
         //}
 
-        renderCodeStream(10, 10, 200, 200);
+        renderCodeStream(10, 10, 800, 800);
         mWindow->present();
     }
 }
