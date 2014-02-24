@@ -246,6 +246,27 @@ namespace engine{
         }
     }
 
+    void Window::setRenderTarget(SDL_Texture *target){
+        SDL_Renderer* r = mRenderer.get();
+        if (r != 0){
+            SDL_RendererInfo rinfo;
+            SDL_GetRendererInfo(r, &rinfo);
+            if (rinfo.flags & SDL_RENDERER_TARGETTEXTURE != 0){
+                SDL_SetRenderTarget(r, target);
+            } else {
+                throw std::runtime_error("Render to Texture not supported.");
+            }
+        }
+    }
+
+    SDL_Texture* Window::getRenderTarget(){
+        SDL_Renderer* r = mRenderer.get();
+        if (r != 0){
+            return SDL_GetRenderTarget(r);
+        }
+        return nullptr;
+    }
+
     void Window::clear(){
         setRenderColor(&mClearColor);
         SDL_RenderClear(mRenderer.get());
@@ -289,6 +310,13 @@ namespace engine{
         SDL_Renderer *r = mRenderer.get();
         if (r != 0){
             SDL_RenderGetLogicalSize(r, w, h);
+        }
+    }
+
+    void Window::getRenderInfo(SDL_RendererInfo &info){
+        SDL_Renderer *r = mRenderer.get();
+        if (r != 0){
+            SDL_GetRendererInfo(r, &info);
         }
     }
 

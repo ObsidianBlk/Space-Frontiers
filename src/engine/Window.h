@@ -79,6 +79,8 @@ class Window
         void present();
         void render(SDL_Texture *tex, const SDL_Rect *src, const SDL_Rect *dst);
         void render(SDL_Texture *tex, const SDL_Rect* src, const SDL_Rect* dst, const double& angle, const SDL_Point* center, const SDL_RendererFlip& flip);
+        void setRenderTarget(SDL_Texture *target);
+        SDL_Texture* getRenderTarget();
 
         /* -- States -- */
         void setLogicalRendererSize(int w, int h);
@@ -93,6 +95,7 @@ class Window
 
         Uint32 getPixelFormat();
         void getLogicalRendererSize(int *w, int *h);
+        void getRenderInfo(SDL_RendererInfo &info);
 
         int getDisplayIndex();
         void getDisplayMode(SDL_DisplayMode *mode);

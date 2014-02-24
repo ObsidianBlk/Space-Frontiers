@@ -69,7 +69,7 @@ struct TextureRenderState{
 class Texture : public Resource
 {
     public:
-        Texture(WindowHnd win, int w, int h, int depth, Uint32 flags=0, Uint32 rmask=0, Uint32 gmask=0, Uint32 bmask=0, Uint32 amask=0);
+        Texture(WindowHnd win, int w, int h, Uint32 format=SDL_PIXELFORMAT_RGBA8888, int access=SDL_TEXTUREACCESS_STATIC);
         Texture(std::string uri, WindowHnd win);
         ~Texture();
 
@@ -82,6 +82,8 @@ class Texture : public Resource
 
         void queryInfo(Uint32 *fmt, int *access, int *width, int *height);
 
+        void setAsRenderTarget();
+        void clearRenderTarget();
         void render(int x, int y, SDL_Rect* clip=nullptr);
         void render(const SDL_Rect* src, const SDL_Rect* dst, const double& angle, const SDL_Point* center, const SDL_RendererFlip& flip);
         void render(const TextureRenderState *state, const SDL_Rect* dst);
@@ -93,10 +95,14 @@ class Texture : public Resource
         TexRenderStateList mRenderStates;
 
         SDL_TexturePtr mTexture;
-        SDL_SurfacePtr mSurface;
         WindowHnd mTexWindow;
+        Uint32 mFormat;
+        int mAccess;
+        int mWidth;
+        int mHeight;
 
         void LoadTexture();
+        void CreateBlankTexture(Uint32 format, int access, int width, int height);
     private:
 };
 
