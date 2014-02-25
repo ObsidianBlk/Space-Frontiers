@@ -36,6 +36,7 @@
 #include "engine/WindowManager.h"
 #include "engine/Window.h"
 #include "engine/GameStateManager.h"
+#include "engine/Writer.h"
 
 
 class Application

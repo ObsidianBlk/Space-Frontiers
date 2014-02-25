@@ -42,6 +42,15 @@
 #include "engine/Timer.h"
 
 
+struct sMenuItemInfo{
+    std::string itemName;
+    SDL_Texture* texIdle;
+    SDL_Texture* texSelected;
+    int width;
+    int height;
+};
+
+
 class MainMenu : public engine::IState, public engine::IIOState, public engine::IUpdateable, public engine::IRenderable
 {
     public:
@@ -70,6 +79,11 @@ class MainMenu : public engine::IState, public engine::IIOState, public engine::
         int mLogicalRenderWidth;
         int mLogicalRenderHeight;
 
+        engine::TexturePtr mMenuItemsTexture;
+        std::vector<sMenuItemInfo> mMenuItems;
+        int mMenuItemID;
+
+
         std::vector<std::string> mCodeStreamList;
         int mCodeStreamIndex;
         std::vector<SDL_Texture*> mCodeStreamTextures;
@@ -80,6 +94,8 @@ class MainMenu : public engine::IState, public engine::IIOState, public engine::
         void updateCodeStream(int steps, int viewHeight);
         void renderCodeStream(int x, int y, int viewWidth, int viewHeight);
         void clearCodeStreamTextures();
+
+        void preRenderMenuItems();
 };
 
 #endif // MAINMENU_H

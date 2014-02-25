@@ -50,7 +50,9 @@ namespace engine{
             * Adds a font to the Writer font map. After definition, the font is accessed by the given name.
             */
             void defineFont(std::string fontName, std::string fontSrc, int fontSize);
+            bool hasFont(std::string fontName);
             int getFontPixelHeight(std::string fontName);
+            void getFontStringTextSize(std::string fontName, std::string str, int *w, int *h);
 
             void setPenColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a=255);
             void setPenColor(const SDL_Color *c);

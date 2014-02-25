@@ -65,10 +65,22 @@ namespace engine{
         }
     }
 
+    bool Writer::hasFont(std::string fontName){
+        return getFontPtr(fontName) != nullptr;
+    }
+
     int Writer::getFontPixelHeight(std::string fontName){
         TTF_Font* font = getFontPtr(fontName);
         if (font != nullptr){
             return TTF_FontHeight(font);
+        }
+        return 0;
+    }
+
+    void Writer::getFontStringTextSize(std::string fontName, std::string str, int *w, int *h){
+        TTF_Font* font = getFontPtr(fontName);
+        if (font != nullptr){
+            TTF_SizeText(font, str.c_str(), w, h);
         }
     }
 

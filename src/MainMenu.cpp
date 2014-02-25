@@ -183,12 +183,20 @@ const std::string MainMenu::CODE_STREAM_TEXT = "#ifndef SHA1_HEADER\n"
 
 MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
     mHasFocus = false;
+    mMenuItemID = 0;
     mLogicalRenderWidth = 0;
     mLogicalRenderHeight = 0;
     mCodeStreamIndex = 0;
     mWindow = engine::WindowHnd();
     mTexBackground = engine::TextureHnd();
 
+    mMenuItems.resize(3);
+    mMenuItems[0].itemName = "Start Game";
+    mMenuItems[1].itemName = "Options";
+    mMenuItems[2].itemName = "Quit";
+
+    // Hehe... tripped myself up...
+    // NOTHING AFTER THIS LINE!!
     if (gsm.IsValid()){
         gsm->addState(engine::StatePtr(this));
     } else {
@@ -198,6 +206,7 @@ MainMenu::MainMenu(engine::GameStateManagerHnd gsm){
 }
 
 MainMenu::~MainMenu(){
+    stop();
     clearCodeStreamTextures();
 }
 
@@ -229,15 +238,24 @@ void MainMenu::start(){
     if (!mWriter.IsValid()){
         throw std::runtime_error("Failed to obtain Writer object.");
     }
-    mWriter->defineFont("default", "assets/fonts/6809chargen.ttf", 24);
-    mWriter->setPenColor(64, 255, 64);
+    if (!mWriter->hasFont("default8") || !mWriter->hasFont("default12") || !mWriter->hasFont("default24")){
+        throw std::runtime_error("Required font not defined.");
+    }
+    //mWriter->setPenColor(64, 255, 64);
+    preRenderMenuItems();
 
     // Now split that really big const string defined at the top of this file into vector.
     splitString(CODE_STREAM_TEXT, "\n", &mCodeStreamList);
     mHasFocus = true;
 }
 
-void MainMenu::stop(){}
+void MainMenu::stop(){
+    for (int i = 0; i < mMenuItems.size(); i++){
+        SDL_DestroyTexture(mMenuItems.at(i).texIdle);
+        SDL_DestroyTexture(mMenuItems.at(i).texSelected);
+    }
+    mMenuItems.clear();
+}
 
 void MainMenu::getFocus(){
         mHasFocus = true;
@@ -250,11 +268,14 @@ void MainMenu::looseFocus(){
 void MainMenu::update(){
     if (mHasFocus){
         if (!mCodeStreamTimer.started()){mCodeStreamTimer.start(50);}
-        updateCodeStream(mCodeStreamTimer.steps(), 800);
+        updateCodeStream(mCodeStreamTimer.steps(), 400);
     }
 }
 
 void MainMenu::render(){
+    SDL_Rect src;
+    SDL_Rect dst;
+
     if (mHasFocus && mWindow.IsValid()){
         mWindow->clear();
 
@@ -265,7 +286,25 @@ void MainMenu::render(){
         //    mWriter->presentToWindow(mWindow, "default", "On a dark and stormy night in the middle of the universe", 10, 10);
         //}
 
-        renderCodeStream(10, 10, 800, 800);
+        dst.x = 50;
+        dst.y = 200;
+        for (int i = 0; i < mMenuItems.size(); i++){
+            SDL_Texture* tex = nullptr;
+            if (mMenuItemID == i){
+                tex = mMenuItems.at(i).texSelected;
+            } else {
+                tex = mMenuItems.at(i).texIdle;
+            }
+
+            SDL_QueryTexture(tex, nullptr, nullptr, &src.w, &src.h);
+            src.x = src.y = 0;
+            dst.w = src.w;
+            dst.h = src.h;
+            mWindow->render(tex, &src, &dst);
+            dst.y += src.h+2;
+        }
+
+        renderCodeStream(1240, 400, 400, 400);
         mWindow->present();
     }
 }
@@ -274,17 +313,18 @@ void MainMenu::render(){
 // PRIVATE
 void MainMenu::updateCodeStream(int steps, int viewHeight){
     if (steps > 0 && mWindow.IsValid() && mWriter.IsValid()){
-        int fontHeight = mWriter->getFontPixelHeight("default");
+        int fontHeight = mWriter->getFontPixelHeight("default12");
 
         if (mCodeStreamList.size() > 0 && fontHeight > 0 && viewHeight > 0 && viewHeight > fontHeight){
             int maxViewableLines = viewHeight/fontHeight;
 
+            mWriter->setPenColor(64, 255, 64);
             // Ok... now... I'm managing an EXTREAM case where there could be a HUGE delay between calls.
             if (steps > maxViewableLines){
                 mCodeStreamIndex = maxViewableLines - ((mCodeStreamIndex+steps)%maxViewableLines);
                 clearCodeStreamTextures();
                 for (int i = 0; i < maxViewableLines; i++){
-                    SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+                    SDL_Texture* tex = mWriter->textToTexture(mWindow, "default12", mCodeStreamList.at(mCodeStreamIndex));
                     mCodeStreamIndex++;
                     if (mCodeStreamIndex >= mCodeStreamList.size())
                         mCodeStreamIndex = 0;
@@ -296,7 +336,7 @@ void MainMenu::updateCodeStream(int steps, int viewHeight){
             } else {
                 for (int i = 0; i < steps; i++){
                     // Build the new string texture and store it.
-                    SDL_Texture* tex = mWriter->textToTexture(mWindow, "default", mCodeStreamList.at(mCodeStreamIndex));
+                    SDL_Texture* tex = mWriter->textToTexture(mWindow, "default12", mCodeStreamList.at(mCodeStreamIndex));
                     mCodeStreamIndex++;
                     if (mCodeStreamIndex >= mCodeStreamList.size())
                         mCodeStreamIndex = 0;
@@ -322,7 +362,7 @@ void MainMenu::renderCodeStream(int x, int y, int viewWidth, int viewHeight){
     dst.y = y;
 
     if (mWindow.IsValid() && mWriter.IsValid() && mCodeStreamTextures.size() > 0){
-        int fontHeight = mWriter->getFontPixelHeight("default");
+        int fontHeight = mWriter->getFontPixelHeight("default12");
 
         // Render the string textures we have!
         for (int index = 0; index < mCodeStreamTextures.size(); index++){
@@ -360,11 +400,26 @@ bool MainMenu::poll(SDL_Event event){
     case SDL_KEYDOWN:
         {
             // exit if ESCAPE is pressed
-            if (event.key.keysym.sym == SDLK_ESCAPE)
+            if (event.key.keysym.sym == SDLK_ESCAPE){
                 if (mGameStateManager.IsValid()){
                     // THIS state should have focus when this occures, we we're dropping ourselved here!
                     mGameStateManager->dropState();
                 }
+            } else if (event.key.keysym.sym == SDLK_DOWN){
+                if (mMenuItemID < mMenuItems.size()-1){
+                    mMenuItemID++;
+                }
+            } else if (event.key.keysym.sym == SDLK_UP){
+                if (mMenuItemID > 0){
+                    mMenuItemID--;
+                }
+            } else if (event.key.keysym.sym == SDLK_RETURN){
+                if (mMenuItems.at(mMenuItemID).itemName == std::string("Quit")){
+                    if (mGameStateManager.IsValid()){
+                        mGameStateManager->dropState();
+                    }
+                }
+            }
             return true;
         }
     } // end switch
@@ -390,6 +445,19 @@ void MainMenu::splitString(std::string s, std::string delimiter, std::vector<std
     }
     // This will either store the tailing remanents of the given string, or the whole string (if the delimiter was not found at all)
     container->push_back(s);
+}
+
+
+void MainMenu::preRenderMenuItems(){
+    for (int n = 0; n < mMenuItems.size(); n++){
+        sMenuItemInfo* i = &mMenuItems.at(n);
+        mWriter->getFontStringTextSize("default24", i->itemName, &i->width, &i->height);
+
+        mWriter->setPenColor(64, 128, 64);
+        i->texIdle = mWriter->textToTexture(mWindow, "default24", i->itemName);
+        mWriter->setPenColor(64, 255, 64);
+        i->texSelected = mWriter->textToTexture(mWindow, "default24", i->itemName);
+    }
 }
 
 

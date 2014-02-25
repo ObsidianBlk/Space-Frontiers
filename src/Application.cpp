@@ -41,6 +41,13 @@ Application::Application(){
         throw std::runtime_error("Failed to create main application window.");
     }
     w->setLogicalRendererSize(1680, 1050);
+
+    engine::WriterHnd writer = engine::Writer::getHandle();
+    if (writer.get() != 0){
+        writer->defineFont("default8", "assets/fonts/6809chargen.ttf", 8);
+        writer->defineFont("default12", "assets/fonts/6809chargen.ttf", 12);
+        writer->defineFont("default24", "assets/fonts/6809chargen.ttf", 24);
+    }
 }
 
 Application::~Application()
