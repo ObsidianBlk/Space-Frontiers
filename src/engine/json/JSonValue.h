@@ -1,12 +1,11 @@
 #ifndef JSONVALUE_H
 #define JSONVALUE_H
 
-
+#include <iostream>
+#include <cstdio>
 #include <string>
 #include <map>
 #include <vector>
-
-#include <boost/variant.hpp>
 
 namespace engine{ namespace json {
 
@@ -23,48 +22,53 @@ namespace engine{ namespace json {
     {
         public:
             JSonValue();
-            JSonValue(JSonObject& value);
-            JSonValue(JSonArray& value);
-            JSonValue(int value);
-            JSonValue(float value);
-            JSonValue(double value);
-            JSonValue(std::string value);
-            JSonValue(bool value);
+            explicit JSonValue(const JSonObject& value);
+            explicit JSonValue(const JSonArray& value);
+            explicit JSonValue(const std::string& value);
+            explicit JSonValue(const char* value);
+            explicit JSonValue(double value);
+            explicit JSonValue(bool value);
             ~JSonValue();
 
-
             JSonType type();
+            const JSonType type() const;
 
-            void set(JSonObject& value);
-            void set(JSonArray& value);
-            void set(int value);
-            void set(float value);
-            void set(double value);
-            void set(std::string value);
-            void set(bool value);
+            template<typename T> bool is() const;
+            template<typename T> const T& get() const;
+            template<typename T> T& get();
+            void set(const JSonValue& value);
 
-            JSonObject& getObject();
-            JSonArray& getArray();
-            int getInt();
-            float getFloat();
-            double getDouble();
-            std::string getString();
-            bool getBool();
+            std::string to_str();
+            std::string serialize();
 
-            /*JSonValue &operator[](const int index);
-            JSonObject &operator[](const int index);
-            JSonArray &operator[](const int index);
+            JSonValue& operator=(const JSonValue &rhs);
+            JSonValue& operator=(const JSonObject &rhs);
+            JSonValue& operator=(const JSonArray &rhs);
+            JSonValue& operator=(const std::string &rhs);
+            JSonValue& operator=(const char* rhs);
+            JSonValue& operator=(double rhs);
+            JSonValue& operator=(int rhs);
+            JSonValue& operator=(float rhs);
+            JSonValue& operator=(bool rhs);
 
-            JSonValue &operator[](const std::string key);
-            JSonValue &operator[](const char* key);*/
+            JSonValue& operator[](const std::string& index);
+            JSonValue& operator[](const char* index);
+            JSonValue& operator[](const int index);
 
         protected:
-            typedef boost::variant<JSonObject, JSonArray, int, float, double, std::string, bool> jvar;
+            union JSonVar{
+                JSonObject*     _object;
+                JSonArray*      _array;
+                std::string*    _string;
+                double          _number;
+                bool            _boolean;
+            };
+
+            JSonType mType;
+            JSonVar mValue;
 
         private:
-            JSonType mType;
-            jvar mValue;
-
+            std::string Serialize_str(const std::string& s);
             void ClearObjectsOrArrays();
     };
 

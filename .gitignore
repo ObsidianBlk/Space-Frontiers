@@ -3,6 +3,8 @@ obj/*
 build/**
 assets/**
 *.cbp
+*.workspace
+*.workspace.layout
 *.depend
 *.layout
 GameIdeas.txt
