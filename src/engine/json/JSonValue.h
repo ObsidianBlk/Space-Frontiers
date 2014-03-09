@@ -49,6 +49,12 @@ namespace engine{ namespace json {
             bool hasKey(const std::string key);
             bool hasKey(const char* key);
 
+            JSonValue& getKey(const std::string key, bool createMissingKey=false);
+            JSonValue& getKey(const char* key, bool createMissingKey=false);
+
+            size_t size();
+            size_t size() const;
+
             JSonValue& operator=(const JSonValue &rhs);
             JSonValue& operator=(const JSonObject &rhs);
             JSonValue& operator=(const JSonArray &rhs);
@@ -79,6 +85,7 @@ namespace engine{ namespace json {
             std::string Serialize_str(const std::string& s);
             int StrToNum(std::string text, int defres=0);
             void SplitKey(const std::string key, std::string &head, std::string &tail);
+            bool KeyContainsArrayAccess(const std::string key);
             void ClearObjectsOrArrays();
     };
 

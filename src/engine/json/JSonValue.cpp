@@ -172,29 +172,107 @@ namespace engine{ namespace json {
         return false;
     }
 
-    int JSonValue::StrToNum(std::string text, int defres){
-        // NOTE: This method should NOT be needed. std::stoi() should do the job, but it seems
-        // to be missing in MinGW. Until I come up with a more elegant way to deal with that issue,
-        // this method will exist.
-        std::istringstream ss(text);
-        int res;
-        return ss >> res ? res : defres;
-    }
-
-    void JSonValue::SplitKey(const std::string key, std::string &head, std::string &tail){
-        std::string delimiter(":");
-        size_t pos = key.find(delimiter);
-        if (pos != std::string::npos){
-            head = key.substr(0, pos);
-            tail = key.substr(pos+delimiter.length(), key.length()-delimiter.length());
-        } else {
-            head = key;
-            tail = "";
-        }
-    }
 
     bool JSonValue::hasKey(const char* key){
         return hasKey(std::string(key));
+    }
+
+
+    JSonValue& JSonValue::getKey(const std::string key, bool createMissingKey){
+        if (mType == JSonType_Object || mType == JSonType_Array){
+            std::string head = "";
+            std::string tail = "";
+            SplitKey(key, head, tail);
+
+            if (mType == JSonType_Object){
+                JSonObjectIter i = mValue._object->find(head);
+                if (i != mValue._object->end()){
+                    if (tail != ""){
+                        try{
+                            return i->second.getKey(tail, createMissingKey);
+                        } catch (std::out_of_range e){
+                            throw e;
+                        } catch (std::runtime_error e){
+                            throw e;
+                        }
+                    }
+                    return (*mValue._object)[head];
+                } else if (createMissingKey){
+                    if (KeyContainsArrayAccess(key))
+                        throw std::runtime_error(std::string("Key segment \"") + key + std::string("\" contains array access. Arrays must be handled manually."));
+
+                    (*mValue._object)[head] = *(new JSonObject());
+                    if (tail != "")
+                        return (*mValue._object)[head].getKey(tail, createMissingKey); // In theory, I shouldn't have to worry about any errors beyond this point.
+                    return (*mValue._object)[head];
+                }
+                throw std::out_of_range(std::string("Unable to locate resource from key segment \"") + key + std::string("\"."));
+
+            } else if (mType == JSonType_Array){
+                if (head[0] == '#'){
+                    int index = StrToNum(head.substr(1, head.length()), -1); // TODO: Check for errors here!!
+                    if (index >= 0 && index < mValue._array->size()){
+                        if (tail != ""){
+                            return mValue._array->at(index)->getKey(tail, createMissingKey);
+                        }
+                        return *(mValue._array->at(index));
+                    }
+                    std::out_of_range("Key to index value out of range of the JSonArray object.");
+                } else if (head == "+" && tail == ""){ // A special case for growing an array without having to dig into the DOM for it.
+                    mValue._array->push_back(new JSonValue());
+                    return *(mValue._array->at(mValue._array->size()-1));
+                }
+                std::runtime_error(std::string("Key segment \"") + key + std::string("\" does not begin with array access key format."));
+            }
+        }
+        throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
+    }
+
+    JSonValue& JSonValue::getKey(const char* key, bool createMissingKey){
+        try{
+            return getKey(std::string(key, createMissingKey));
+        }catch (std::out_of_range e){
+            throw e;
+        } catch (std::runtime_error e){
+            throw e;
+        }
+    }
+
+
+    size_t JSonValue::size(){
+        switch (mType){
+        case JSonType_Object:
+            return mValue._object->size();
+        case JSonType_Array:
+            return mValue._array->size();
+        case JSonType_String:
+            return mValue._string->size();
+        case JSonType_Number:
+            return sizeof(mValue._number);
+        case JSonType_Bool:
+            return sizeof(mValue._boolean);
+        default:
+            break;
+        }
+        return 0;
+    }
+
+    size_t JSonValue::size() const{
+        switch (mType){
+        case JSonType_Object:
+            return mValue._object->size();
+        case JSonType_Array:
+            return mValue._array->size();
+        case JSonType_String:
+            return mValue._string->size();
+        case JSonType_Number:
+            return sizeof(mValue._number);
+        case JSonType_Bool:
+            return sizeof(mValue._boolean);
+        default:
+            break;
+        }
+        return 0;
     }
 
 
@@ -261,24 +339,29 @@ namespace engine{ namespace json {
 
 
     JSonValue& JSonValue::operator[](const std::string& key){
-        if (mType == JSonType_Object){
-            return (*mValue._object)[key];
-            /*JSonObjectIter i = mValue._object->find(index);
-            if (i != mValue._object->end())
-                return i->second;
-            throw std::out_of_range(std::string("Index \"") + index + std::string("\" not found in JSonObject."));*/
+        if (mType == JSonType_Object || mType == JSonType_Array){
+            try {
+                return getKey(key, mType == JSonType_Object ? true : false);
+            } catch (std::out_of_range e){
+                throw e;
+            } catch (std::runtime_error e){
+                throw e;
+            }
         }
-        throw std::runtime_error("JSonValue is not a JSonType_Object.");
+        throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
     }
 
     JSonValue& JSonValue::operator[](const char* key){
-        try{
-            return operator[](std::string(key));
-        } catch (std::out_of_range e){
-            throw e;
-        } catch (std::runtime_error e){
-            throw e;
+        if (mType == JSonType_Object || mType == JSonType_Array){
+            try{
+                return getKey(std::string(key), mType == JSonType_Object ? true : false);
+            } catch (std::out_of_range e){
+                throw e;
+            } catch (std::runtime_error e){
+                throw e;
+            }
         }
+        throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
     }
 
     JSonValue& JSonValue::operator[](const int index){
@@ -290,7 +373,6 @@ namespace engine{ namespace json {
         }
         throw std::runtime_error("JSonValue is not a JSonType_Array.");
     }
-
 
 
 
@@ -322,6 +404,39 @@ namespace engine{ namespace json {
         }
         serial += '"';
         return serial;
+    }
+
+
+    int JSonValue::StrToNum(std::string text, int defres){
+        // NOTE: This method should NOT be needed. std::stoi() should do the job, but it seems
+        // to be missing in MinGW. Until I come up with a more elegant way to deal with that issue,
+        // this method will exist.
+        std::istringstream ss(text);
+        int res;
+        return ss >> res ? res : defres;
+    }
+
+    void JSonValue::SplitKey(const std::string key, std::string &head, std::string &tail){
+        std::string delimiter(":");
+        size_t pos = key.find(delimiter);
+        if (pos != std::string::npos){
+            head = key.substr(0, pos);
+            tail = key.substr(pos+delimiter.length(), key.length()-delimiter.length());
+        } else {
+            head = key;
+            tail = "";
+        }
+    }
+
+    bool JSonValue::KeyContainsArrayAccess(const std::string key){
+        std::string head = "";
+        std::string tail = "";
+        SplitKey(key, head, tail);
+        if (head[0] == '#')
+            return true;
+        if (tail != "")
+            return KeyContainsArrayAccess(tail);
+        return false;
     }
 
 
