@@ -7,12 +7,12 @@ namespace engine{ namespace json {
 
     JSonValue::JSonValue() : mType(JSonType_Null){}
 
-    JSonValue::JSonValue(const JSonObject& value) : mType(JSonType_Object){
-        mValue._object = new JSonObject(value);
+    JSonValue::JSonValue(JSonObjectPtr value) : mType(JSonType_Object){
+        mObject = value;
     }
 
-    JSonValue::JSonValue(const JSonArray& value) : mType(JSonType_Array){
-        mValue._array = new JSonArray(value);
+    JSonValue::JSonValue(JSonArrayPtr value) : mType(JSonType_Array){
+        mArray = value;
     }
 
     JSonValue::JSonValue(const std::string& value) : mType(JSonType_String){
@@ -45,21 +45,55 @@ namespace engine{ namespace json {
     }
 
 
-        JSonType JSonValue::type(){return mType;}
+    JSonType JSonValue::type(){return mType;}
     const JSonType JSonValue::type() const{return mType;}
+
+    std::string JSonValue::type_str(){
+        switch(mType){
+        case JSonType_Object:
+            return std::string("JSonType_Object");
+        case JSonType_Array:
+            return std::string("JSonType_Array");
+        case JSonType_String:
+            return std::string("JSonType_String");
+        case JSonType_Number:
+            return std::string("JSonType_Number");
+        case JSonType_Bool:
+            return std::string("JSonType_Bool");
+        default: break;
+        }
+        return std::string("JSonType_Null");
+    }
+
+    const std::string JSonValue::type_str() const{
+        switch(mType){
+        case JSonType_Object:
+            return std::string("JSonType_Object");
+        case JSonType_Array:
+            return std::string("JSonType_Array");
+        case JSonType_String:
+            return std::string("JSonType_String");
+        case JSonType_Number:
+            return std::string("JSonType_Number");
+        case JSonType_Bool:
+            return std::string("JSonType_Bool");
+        default: break;
+        }
+        return std::string("JSonType_Null");
+    }
 
     void JSonValue::set(const JSonValue& value){
         switch(value.type()){
         case JSonType_Object:
-            if (mValue._object != value.mValue._object){
+            if (mObject != value.mObject){
                 ClearObjectsOrArrays();
-                mValue._object = new JSonObject(*(value.mValue._object));
+                mObject = value.mObject;
             }
             break;
         case JSonType_Array:
-            if (mValue._array != value.mValue._array){
+            if (mArray != value.mArray){
                 ClearObjectsOrArrays();
-                mValue._array = new JSonArray(*(value.mValue._array));
+                mArray = value.mArray;
             }
             break;
         case JSonType_String:
@@ -118,7 +152,7 @@ namespace engine{ namespace json {
             break;
         case JSonType_Object:
             serial = "{";
-            for (JSonObjectIter i = mValue._object->begin(); i != mValue._object->end(); i++){
+            for (JSonObjectIter i = mObject->begin(); i != mObject->end(); i++){
                 if (past_first_element){serial += ",";}
                 serial += i->first + std::string(":") + i->second.serialize();
                 past_first_element = true;
@@ -127,7 +161,7 @@ namespace engine{ namespace json {
             break;
         case JSonType_Array:
             serial = "[";
-            for (JSonArrayIter i = mValue._array->begin(); i != mValue._array->end(); i++){
+            for (JSonArrayIter i = mArray->begin(); i != mArray->end(); i++){
                 if (past_first_element){serial += ",";}
                 serial += (*i)->serialize();
                 past_first_element = true;
@@ -149,8 +183,8 @@ namespace engine{ namespace json {
             SplitKey(key, head, tail);
 
             if (mType == JSonType_Object){
-                JSonObjectIter i = mValue._object->find(head);
-                if (i != mValue._object->end()){
+                JSonObjectIter i = mObject->find(head);
+                if (i != mObject->end()){
                     if (tail != ""){
                         return i->second.hasKey(tail);
                     }
@@ -159,9 +193,9 @@ namespace engine{ namespace json {
             } else if (mType == JSonType_Array){
                 if (head[0] == '#'){
                     int index = StrToNum(head.substr(1, head.length()), -1);
-                    if (index >= 0 && index < mValue._array->size()){
+                    if (index >= 0 && index < mArray->size()){
                         if (tail != ""){
-                            return mValue._array->at(index)->hasKey(tail);
+                            return mArray->at(index)->hasKey(tail);
                         }
                         return true;
                     }
@@ -185,8 +219,8 @@ namespace engine{ namespace json {
             SplitKey(key, head, tail);
 
             if (mType == JSonType_Object){
-                JSonObjectIter i = mValue._object->find(head);
-                if (i != mValue._object->end()){
+                JSonObjectIter i = mObject->find(head);
+                if (i != mObject->end()){
                     if (tail != ""){
                         try{
                             return i->second.getKey(tail, createMissingKey);
@@ -196,31 +230,31 @@ namespace engine{ namespace json {
                             throw e;
                         }
                     }
-                    return (*mValue._object)[head];
+                    return (*mObject)[head];
                 } else if (createMissingKey){
                     if (KeyContainsArrayAccess(key))
                         throw std::runtime_error(std::string("Key segment \"") + key + std::string("\" contains array access. Arrays must be handled manually."));
 
-                    (*mValue._object)[head] = *(new JSonObject());
+                    (*mObject)[head] = JSonObjectPtr(new JSonObject());
                     if (tail != "")
-                        return (*mValue._object)[head].getKey(tail, createMissingKey); // In theory, I shouldn't have to worry about any errors beyond this point.
-                    return (*mValue._object)[head];
+                        return (*mObject)[head].getKey(tail, createMissingKey); // In theory, I shouldn't have to worry about any errors beyond this point.
+                    return (*mObject)[head];
                 }
                 throw std::out_of_range(std::string("Unable to locate resource from key segment \"") + key + std::string("\"."));
 
             } else if (mType == JSonType_Array){
                 if (head[0] == '#'){
                     int index = StrToNum(head.substr(1, head.length()), -1); // TODO: Check for errors here!!
-                    if (index >= 0 && index < mValue._array->size()){
+                    if (index >= 0 && index < mArray->size()){
                         if (tail != ""){
-                            return mValue._array->at(index)->getKey(tail, createMissingKey);
+                            return mArray->at(index)->getKey(tail, createMissingKey);
                         }
-                        return *(mValue._array->at(index));
+                        return *(mArray->at(index));
                     }
                     std::out_of_range("Key to index value out of range of the JSonArray object.");
                 } else if (head == "+" && tail == ""){ // A special case for growing an array without having to dig into the DOM for it.
-                    mValue._array->push_back(new JSonValue());
-                    return *(mValue._array->at(mValue._array->size()-1));
+                    mArray->push_back(JSonValuePtr(new JSonValue()));
+                    return *(mArray->at(mArray->size()-1));
                 }
                 std::runtime_error(std::string("Key segment \"") + key + std::string("\" does not begin with array access key format."));
             }
@@ -242,9 +276,9 @@ namespace engine{ namespace json {
     size_t JSonValue::size(){
         switch (mType){
         case JSonType_Object:
-            return mValue._object->size();
+            return mObject->size();
         case JSonType_Array:
-            return mValue._array->size();
+            return mArray->size();
         case JSonType_String:
             return mValue._string->size();
         case JSonType_Number:
@@ -260,9 +294,9 @@ namespace engine{ namespace json {
     size_t JSonValue::size() const{
         switch (mType){
         case JSonType_Object:
-            return mValue._object->size();
+            return mObject->size();
         case JSonType_Array:
-            return mValue._array->size();
+            return mArray->size();
         case JSonType_String:
             return mValue._string->size();
         case JSonType_Number:
@@ -281,19 +315,19 @@ namespace engine{ namespace json {
         return (*this);
     }
 
-    JSonValue& JSonValue::operator=(const JSonObject &rhs){
-        if (mType != JSonType_Object || mValue._object != &rhs){
+    JSonValue& JSonValue::operator=(JSonObjectPtr rhs){
+        if (mType != JSonType_Object || mObject != rhs){
             ClearObjectsOrArrays();
-            mValue._object = new JSonObject(rhs);
+            mObject = rhs;
             mType = JSonType_Object;
         }
         return (*this);
     }
 
-    JSonValue& JSonValue::operator=(const JSonArray &rhs){
-        if (mType != JSonType_Array || mValue._array != &rhs){
+    JSonValue& JSonValue::operator=(JSonArrayPtr rhs){
+        if (mType != JSonType_Array || mArray != rhs){
             ClearObjectsOrArrays();
-            mValue._array = new JSonArray(rhs);
+            mArray = rhs;
             mType = JSonType_Array;
         }
         return (*this);
@@ -366,8 +400,8 @@ namespace engine{ namespace json {
 
     JSonValue& JSonValue::operator[](const int index){
         if (mType == JSonType_Array){
-            if (index >= 0 && index < mValue._array->size()){
-                return *(mValue._array->at(index));
+            if (index >= 0 && index < mArray->size()){
+                return *(mArray->at(index));
             }
             throw std::out_of_range("Index exceeds size of JSonArray.");
         }
@@ -375,8 +409,183 @@ namespace engine{ namespace json {
     }
 
 
+    bool JSonValue::operator==(const JSonValue& rhs) const{
+        if (mType == rhs.mType){
+            switch(mType){
+            case JSonType_Object:
+                return mObject == rhs.mObject;
+            case JSonType_Array:
+                return mArray == rhs.mArray;
+            case JSonType_String:
+                return *(mValue._string) == *(rhs.mValue._string);
+            case JSonType_Bool:
+                return mValue._boolean == rhs.mValue._boolean;
+            case JSonType_Number:
+                return mValue._number == rhs.mValue._number;
+            default:
+                break;
+            }
+        }
+        return false;
+    }
+
+    bool JSonValue::operator==(const JSonObjectPtr rhs) const{
+        if (mType == JSonType_Object){return mObject == rhs;}
+        return false;
+    }
+
+    bool JSonValue::operator==(const JSonArrayPtr rhs) const{
+        if (mType == JSonType_Array){return mArray == rhs;}
+        return false;
+    }
+
+    bool JSonValue::operator==(const std::string rhs) const{
+        if (mType == JSonType_String){return *(mValue._string) == rhs;}
+        return false;
+    }
+
+    bool JSonValue::operator==(const double rhs) const{
+        if (mType == JSonType_Number){return mValue._number == rhs;}
+        return false;
+    }
+
+    bool JSonValue::operator==(const int rhs) const{
+        if (mType == JSonType_Number){return mValue._number == static_cast<double>(rhs);}
+        return false;
+    }
+
+    bool JSonValue::operator==(const float rhs) const{
+        if (mType == JSonType_Number){return mValue._number == static_cast<double>(rhs);}
+        return false;
+    }
+
+    bool JSonValue::operator==(const bool rhs) const{
+        if (mType == JSonType_Bool){return mValue._boolean == rhs;}
+        return false;
+    }
 
 
+    bool JSonValue::operator!=(const JSonValue& rhs) const{return !operator==(rhs);}
+    bool JSonValue::operator!=(const JSonObjectPtr rhs) const{return !operator==(rhs);}
+    bool JSonValue::operator!=(const JSonArrayPtr rhs) const{return !operator==(rhs);}
+    bool JSonValue::operator!=(const std::string rhs) const{return !operator==(rhs);}
+    bool JSonValue::operator!=(const double rhs) const{return !operator==(rhs);}
+    bool JSonValue::operator!=(const int rhs) const{return !operator==(rhs);}
+    bool JSonValue::operator!=(const float rhs) const{return !operator==(rhs);}
+    bool JSonValue::operator!=(const bool rhs) const{return !operator==(rhs);}
+
+    bool JSonValue::operator<(const JSonValue& rhs) const{
+        if (mType == rhs.mType){
+            switch(mType){
+            case JSonType_Number:
+                return mValue._number < rhs.mValue._number;
+            case JSonType_String:
+                return mValue._string->size() < rhs.mValue._string->size();
+            default: break;
+            }
+        }
+        throw std::invalid_argument(type_str() + " and " + rhs.type_str() + " types cannot be compared in this manner.");
+    }
+
+    bool JSonValue::operator<(const std::string rhs) const{
+        if (mType == JSonType_String){return mValue._string->size() < rhs.size();}
+        throw std::invalid_argument(type_str() + " and String types cannot be compared in this manner.");
+    }
+
+    bool JSonValue::operator<(const double rhs) const{
+        if (mType == JSonType_Number){return mValue._number < rhs;}
+        throw std::invalid_argument(type_str() + " and double types cannot be compared in this manner.");
+    }
+
+    bool JSonValue::operator<(const int rhs) const{
+        if (mType == JSonType_Number){return mValue._number < static_cast<double>(rhs);}
+        throw std::invalid_argument(type_str() + " and int types cannot be compared in this manner.");
+    }
+
+    bool JSonValue::operator<(const float rhs) const{
+        if (mType == JSonType_Number){return mValue._number < static_cast<double>(rhs);}
+        throw std::invalid_argument(type_str() + " and float types cannot be compared in this manner.");
+    }
+
+    bool JSonValue::operator>(const JSonValue& rhs) const{
+        try{return (!operator<(rhs) && !operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>(const std::string rhs) const{
+        try{return (!operator<(rhs) && !operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>(const double rhs) const{
+        try{return (!operator<(rhs) && !operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>(const int rhs) const{
+        try{return (!operator<(rhs) && !operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>(const float rhs) const{
+        try{return (!operator<(rhs) && !operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator<=(const JSonValue& rhs) const{
+        try{return (operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator<=(const std::string rhs) const{
+        try{return (operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator<=(const double rhs) const{
+        try{return (operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator<=(const int rhs) const{
+        try{return (operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator<=(const float rhs) const{
+        try{return (operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>=(const JSonValue& rhs) const{
+        try{return (!operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>=(const std::string rhs) const{
+        try{return (!operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>=(const double rhs) const{
+        try{return (!operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>=(const int rhs) const{
+        try{return (!operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+    bool JSonValue::operator>=(const float rhs) const{
+        try{return (!operator<(rhs) || operator==(rhs));}catch(std::invalid_argument e){throw e;}
+    }
+
+
+/* ------------------------------------------------------------------------------------------------------
+STATIC CLASS METHODS BELOW THIS POINT
+------------------------------------------------------------------------------------------------------ */
+    JSonValue JSonValue::Object(){
+        JSonValue v;
+        v = JSonObjectPtr(new JSonObject());
+        return v;
+    }
+
+    JSonValue JSonValue::Array(){
+        JSonValue v;
+        v = JSonArrayPtr(new JSonArray());
+        return v;
+    }
+
+/* ------------------------------------------------------------------------------------------------------
+PRIVATE METHODS BELOW THIS POINT
+------------------------------------------------------------------------------------------------------ */
 
     std::string JSonValue::Serialize_str(const std::string& s){
         std::string serial = "\"";
@@ -442,15 +651,6 @@ namespace engine{ namespace json {
 
     void JSonValue::ClearObjectsOrArrays(){
         switch (mType){
-        case JSonType_Object:
-            delete mValue._object;
-            break;
-        case JSonType_Array:
-            for (int i = 0; i < mValue._array->size(); i++){
-                delete mValue._array->at(i);
-            }
-            delete mValue._array;
-            break;
         case JSonType_String:
             delete mValue._string;
         default:
