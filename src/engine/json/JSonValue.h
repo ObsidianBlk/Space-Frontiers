@@ -1,10 +1,14 @@
 #ifndef JSONVALUE_H
 #define JSONVALUE_H
 
+
+#include <algorithm>
 #include <memory>
+
 #include <iostream>
 #include <sstream>
 #include <cstdio>
+
 #include <string>
 #include <map>
 #include <vector>
@@ -23,6 +27,10 @@ namespace engine{ namespace json {
 
     enum JSonType {JSonType_Object, JSonType_Array, JSonType_Number, JSonType_String, JSonType_Bool, JSonType_Null};
 
+    // TODO: Use these in JSonValue.cpp
+    static const std::string OBJECT_PAIR_SEPERATOR = ":";
+    static const std::string VALUE_SEPERATOR = ",";
+
     class JSonValue
     {
         public:
@@ -37,29 +45,34 @@ namespace engine{ namespace json {
             explicit JSonValue(bool value);
             ~JSonValue();
 
+            bool is(JSonType t);
             JSonType type();
             const JSonType type() const;
             std::string type_str();
             const std::string type_str() const;
 
-            template<typename T> bool is() const;
             template<typename T> const T getPtr() const;
             template<typename T> T getPtr();
-            template<typename T> const T& get() const;
-            template<typename T> T& get();
+            template<typename T> const T get() const;
+            template<typename T> T get();
             void set(const JSonValue& value);
 
             std::string to_str();
             std::string serialize();
-
-            bool hasKey(const std::string key);
-            bool hasKey(const char* key);
+            std::string pretty_serial(std::string indentSym=" ", size_t depth=0);
 
             JSonValue& getKey(const std::string key, bool createMissingKey=false);
             JSonValue& getKey(const char* key, bool createMissingKey=false);
 
+            bool hasKey(const std::string key);
+            bool hasKey(const char* key);
+
             size_t size();
             size_t size() const;
+
+            JSonValue& operator[](const std::string& key);
+            JSonValue& operator[](const char* key);
+            JSonValue& operator[](const size_t index);
 
             JSonValue& operator=(const JSonValue &rhs);
             JSonValue& operator=(JSonObjectPtr rhs);
@@ -70,10 +83,6 @@ namespace engine{ namespace json {
             JSonValue& operator=(int rhs);
             JSonValue& operator=(float rhs);
             JSonValue& operator=(bool rhs);
-
-            JSonValue& operator[](const std::string& key);
-            JSonValue& operator[](const char* key);
-            JSonValue& operator[](const int index);
 
             /*
             For all following comparison operators, their meaning is most clear when used against a variable of the
@@ -139,6 +148,8 @@ namespace engine{ namespace json {
             */
             static JSonValue Array();
 
+            static JSonValue ParseFromString(std::string jsonstr);
+
         protected:
             union JSonVar{
                 std::string*    _string;
@@ -153,70 +164,86 @@ namespace engine{ namespace json {
 
         private:
             std::string Serialize_str(const std::string& s);
-            int StrToNum(std::string text, int defres=0);
             void SplitKey(const std::string key, std::string &head, std::string &tail);
-            bool KeyContainsArrayAccess(const std::string key);
             void ClearObjectsOrArrays();
     };
 
-
-    template<> inline bool JSonValue::is<JSonObject>() const{return mType == JSonType_Object;}
-    template<> inline bool JSonValue::is<JSonArray>() const{return mType == JSonType_Array;}
-    template<> inline bool JSonValue::is<std::string>() const{return mType == JSonType_String;}
-    template<> inline bool JSonValue::is<double>() const{return mType == JSonType_Number;}
-    template<> inline bool JSonValue::is<bool>() const{return mType == JSonType_Bool;}
-
-
     template<> inline const JSonObjectPtr JSonValue::getPtr<JSonObjectPtr>() const{
-        if (is<JSonObject>()){return mObject;}
+        if (mType == JSonType_Object){return mObject;}
         throw std::runtime_error("Type Mismatch!");
     }
 
     template<> inline const JSonArrayPtr JSonValue::getPtr<JSonArrayPtr>() const{
-        if (is<JSonArray>()){return mArray;}
+        if (mType == JSonType_Array){return mArray;}
         throw std::runtime_error("Type Mismatch!");
     }
 
     template<> inline JSonObjectPtr JSonValue::getPtr<JSonObjectPtr>(){
-        if (is<JSonObject>()){return mObject;}
+        if (mType == JSonType_Object){return mObject;}
         throw std::runtime_error("Type Mismatch!");
     }
 
     template<> inline JSonArrayPtr JSonValue::getPtr<JSonArrayPtr>(){
-        if (is<JSonArray>()){return mArray;}
+        if (mType == JSonType_Array){return mArray;}
         throw std::runtime_error("Type Mismatch!");
     }
 
 
 
 
-    template<> inline const std::string& JSonValue::get<std::string>() const{
-        if (is<std::string>()){return *mValue._string;}
+    template<> inline const std::string JSonValue::get<std::string>() const{
+        if (mType == JSonType_String){return *mValue._string;}
         throw std::runtime_error("Type Mismatch!");
     }
 
-    template<> inline const double& JSonValue::get<double>() const{
-        if (is<double>()){return mValue._number;}
+    template<> inline const double JSonValue::get<double>() const{
+        if (mType == JSonType_Number){return mValue._number;}
         throw std::runtime_error("Type Mismatch!");
     }
 
-    template<> inline const bool& JSonValue::get<bool>() const{
-        if (is<bool>()){return mValue._boolean;}
+    template<> inline const int JSonValue::get<int>() const{
+        if (mType == JSonType_Number){return static_cast<int>(mValue._number);}
         throw std::runtime_error("Type Mismatch!");
     }
 
-    template<> inline std::string& JSonValue::get<std::string>(){
-        if (is<std::string>()){return *mValue._string;}
+    template<> inline const float JSonValue::get<float>() const{
+        if (mType == JSonType_Number){return static_cast<float>(mValue._number);}
         throw std::runtime_error("Type Mismatch!");
     }
 
-    template<> inline double& JSonValue::get<double>(){
-        if (is<double>()){return mValue._number;}
+    template<> inline const bool JSonValue::get<bool>() const{
+        if (mType == JSonType_Bool){return mValue._boolean;}
         throw std::runtime_error("Type Mismatch!");
     }
 
-    template<> inline bool& JSonValue::get<bool>(){
-        if (is<bool>()){return mValue._boolean;}
+    template<> inline std::string JSonValue::get<std::string>(){
+        if (mType == JSonType_String){return *mValue._string;}
+        throw std::runtime_error("Type Mismatch!");
+    }
+
+    template<> inline double JSonValue::get<double>(){
+        if (mType == JSonType_Number){return mValue._number;}
+        throw std::runtime_error("Type Mismatch!");
+    }
+
+    template<> inline int JSonValue::get<int>(){
+        if (mType == JSonType_Number){
+            int num = static_cast<int>(mValue._number);
+            return num;
+        }
+        throw std::runtime_error("Type Mismatch!");
+    }
+
+    template<> inline float JSonValue::get<float>(){
+        if (mType == JSonType_Number){
+            float num = static_cast<float>(mValue._number);
+            return num;
+        }
+        throw std::runtime_error("Type Mismatch!");
+    }
+
+    template<> inline bool JSonValue::get<bool>(){
+        if (mType == JSonType_Bool){return mValue._boolean;}
         throw std::runtime_error("Type Mismatch!");
     }
 
