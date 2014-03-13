@@ -26,5 +26,8 @@ set(engine_source_files
     Writer.cpp
     Timer.h
     Timer.cpp
+    json/JSonValue.h
+    json/JSonValue.cpp
+    json/JSonParser.cpp
 )
 add_library(engine ${engine_source_files})

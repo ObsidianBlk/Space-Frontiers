@@ -4,6 +4,7 @@
 
 namespace engine{ namespace json {
 
+    std::string JSonValue::Key_Separator=".";
 
     JSonValue::JSonValue() : mType(JSonType_Null){}
 
@@ -245,7 +246,9 @@ namespace engine{ namespace json {
                 size_t res;
                 return ss >> res ? res : throw std::invalid_argument("String is not a number.");
             };
-            SplitKey(key, head, tail);
+            if (JSonValue::Key_Separator != "")
+                SplitKey(key, head, tail);
+            else head = key;
 
             if (mType == JSonType_Object){
                 JSonObjectIter i = mObject->find(head);
@@ -377,6 +380,17 @@ namespace engine{ namespace json {
             break;
         }
         return 0;
+    }
+
+    bool JSonValue::empty(){
+        switch (mType){
+        case JSonType_Array:
+            return mArray->empty();
+        case JSonType_Object:
+            return mObject->empty();
+        default: break;
+        }
+        return false;
     }
 
 
@@ -688,11 +702,11 @@ PRIVATE METHODS BELOW THIS POINT
     }
 
     void JSonValue::SplitKey(const std::string key, std::string &head, std::string &tail){
-        std::string delimiter(":");
-        size_t pos = key.find(delimiter);
+        //std::string delimiter(":");
+        size_t pos = key.find(JSonValue::Key_Separator);
         if (pos != std::string::npos){
             head = key.substr(0, pos);
-            tail = key.substr(pos+delimiter.length(), key.length()-delimiter.length());
+            tail = key.substr(pos+JSonValue::Key_Separator.length(), key.length()-JSonValue::Key_Separator.length());
         } else {
             head = key;
             tail = "";

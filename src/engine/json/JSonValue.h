@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <memory>
 
-#include <iostream>
+//#include <iostream>
 #include <sstream>
-#include <cstdio>
+//#include <cstdio>
 
 #include <string>
 #include <map>
@@ -28,12 +28,18 @@ namespace engine{ namespace json {
     enum JSonType {JSonType_Object, JSonType_Array, JSonType_Number, JSonType_String, JSonType_Bool, JSonType_Null};
 
     // TODO: Use these in JSonValue.cpp
-    static const std::string OBJECT_PAIR_SEPERATOR = ":";
-    static const std::string VALUE_SEPERATOR = ",";
+    static const char OBJECT_PAIR_SEPARATOR = ':';
+    static const char VALUE_SEPARATOR = ',';
+    static const char OBJECT_SYM_HEAD = '{';
+    static const char OBJECT_SYM_TAIL = '}';
+    static const char ARRAY_SYM_HEAD = '[';
+    static const char ARRAY_SYM_TAIL = ']';
 
     class JSonValue
     {
         public:
+            static std::string Key_Separator;
+
             JSonValue();
             explicit JSonValue(JSonObjectPtr value);
             explicit JSonValue(JSonArrayPtr value);
@@ -67,8 +73,26 @@ namespace engine{ namespace json {
             bool hasKey(const std::string key);
             bool hasKey(const char* key);
 
+            /**
+            * Returns the data size or length in elements or bytes.
+            * For JSonType_Object and JSonType_Array, the return value is the number of elements.
+            * For JSonType_String the return value is the length of the string.
+            * For JSonType_Number and JSonType_Bool the return value is the number of bytes those data values use.
+            * For JSonType_Null the return value is always 0 (zero).
+            */
             size_t size();
             size_t size() const;
+
+            /**
+            * Returns true if the JSonValue is an empty container.
+            * JSonValue is only considered a container if it's a JSonType_Object or JSonType_Array.
+            */
+            bool empty();
+
+            template<typename T> const T begin() const;
+            template<typename T> T begin();
+            template<typename T> const T end() const;
+            template<typename T> T end();
 
             JSonValue& operator[](const std::string& key);
             JSonValue& operator[](const char* key);
@@ -148,7 +172,8 @@ namespace engine{ namespace json {
             */
             static JSonValue Array();
 
-            static JSonValue ParseFromString(std::string jsonstr);
+            static JSonValue ParseFromString(const std::string &jsonstr);
+            static JSonValue ParseFromFile(const std::string &src);
 
         protected:
             union JSonVar{
@@ -245,6 +270,47 @@ namespace engine{ namespace json {
     template<> inline bool JSonValue::get<bool>(){
         if (mType == JSonType_Bool){return mValue._boolean;}
         throw std::runtime_error("Type Mismatch!");
+    }
+
+
+    template<> inline const JSonObjectIter JSonValue::begin() const{
+        if (mType == JSonType_Object){return mObject->begin();}
+        throw std::runtime_error("JSonValue is not an Object type.");
+    }
+
+    template<> inline JSonObjectIter JSonValue::begin(){
+        if (mType == JSonType_Object){return mObject->begin();}
+        throw std::runtime_error("JSonValue is not an Object type.");
+    }
+
+    template<> inline const JSonArrayIter JSonValue::begin() const{
+        if (mType == JSonType_Array){return mArray->begin();}
+        throw std::runtime_error("JSonValue is not an Array type.");
+    }
+
+    template<> inline JSonArrayIter JSonValue::begin(){
+        if (mType == JSonType_Array){return mArray->begin();}
+        throw std::runtime_error("JSonValue is not an Array type.");
+    }
+
+    template<> inline const JSonObjectIter JSonValue::end() const{
+        if (mType == JSonType_Object){return mObject->end();}
+        throw std::runtime_error("JSonValue is not an Object type.");
+    }
+
+    template<> inline JSonObjectIter JSonValue::end(){
+        if (mType == JSonType_Object){return mObject->end();}
+        throw std::runtime_error("JSonValue is not an Object type.");
+    }
+
+    template<> inline const JSonArrayIter JSonValue::end() const{
+        if (mType == JSonType_Array){return mArray->end();}
+        throw std::runtime_error("JSonValue is not an Array type.");
+    }
+
+    template<> inline JSonArrayIter JSonValue::end(){
+        if (mType == JSonType_Array){return mArray->end();}
+        throw std::runtime_error("JSonValue is not an Array type.");
     }
 
 } /* End of json namespace*/ } /* End of engine namespace */
