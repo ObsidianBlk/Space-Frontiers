@@ -345,26 +345,50 @@ namespace engine{ namespace json {
 
 
     JSonValue JSonValue::ParseFromString(const std::string &jsonstr){
-        /*jsonstr = _trim(jsonstr);
-        if (jsonstr[0] == OBJECT_SYM_HEAD){
-            return ParseObject(jsonstr);
-        } else if (jsonstr[0] == ARRAY_SYM_HEAD){
-            return ParseArray(jsonstr);
-        }*/
+        size_t startpos = _findToSymbol(jsonstr, 0, OBJECT_SYM_HEAD); // Look for an object first.
 
-        // The two try/catch blocks below may be hokey, but it's quick and should get to the point.
-        try{
-            return ParseObject(jsonstr);
-        } catch (std::runtime_error e){;} // Ignore this.
+        if (startpos != std::string::npos){
+            if (_trim(jsonstr.substr(0, startpos)) == ""){
+                size_t endpos = _findClosingTailPos(jsonstr, startpos+1, OBJECT_SYM_HEAD, OBJECT_SYM_TAIL);
+                if (endpos == std::string::npos)
+                    throw std::runtime_error("JSON Parser Error: JSon Object missing closing symbol.");
+                if (endpos < jsonstr.size()-1){
+                    if (_trim(jsonstr.substr(endpos+1, jsonstr.size()-endpos)) != "")
+                        throw std::runtime_error("JSON Parse Error: Only one containing JSon Object or Array must be defined at the root of the document.");
+                }
+            }
+            try{
+                return ParseObject(jsonstr);
+            } catch (std::runtime_error e){throw e;}
+        }
 
-        try{
-            return ParseArray(jsonstr);
-        } catch (std::runtime_error e){;} // Ignore this too.
+
+        startpos = _findToSymbol(jsonstr, 0, ARRAY_SYM_HEAD);
+        if (startpos != std::string::npos){
+            if (_trim(jsonstr.substr(0, startpos)) == ""){
+                size_t endpos = _findClosingTailPos(jsonstr, startpos+1, ARRAY_SYM_HEAD, ARRAY_SYM_TAIL);
+                if (endpos == std::string::npos)
+                    throw std::runtime_error("JSON Parser Error: JSon Array missing closing symbol.");
+                if (endpos < jsonstr.size()-1){
+                    if (_trim(jsonstr.substr(endpos+1, jsonstr.size()-endpos)) != "")
+                        throw std::runtime_error("JSON Parse Error: Only one containing JSon Object or Array must be defined at the root of the document.");
+                }
+            }
+            try{
+                return ParseArray(jsonstr);
+            } catch (std::runtime_error e){throw e;}
+        }
 
         // And if both blocks fail...
         throw std::runtime_error("JSON Parser Error: JSON must start as either an Object or Array form.");
     }
 
+
+    JSonValue JSonValue::ParseFromString(const char* jsonstr){
+        try{
+            return JSonValue::ParseFromString(std::string(jsonstr));
+        } catch (std::runtime_error e){throw e;}
+    }
 
     JSonValue JSonValue::ParseFromFile(const std::string &src){
         std::ifstream f(src.c_str());

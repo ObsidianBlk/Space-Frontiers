@@ -22,7 +22,6 @@
 * THE SOFTWARE.
 */
 
-
 #include "JSonValue.h"
 
 
@@ -72,6 +71,10 @@ namespace engine{ namespace json {
 
 
     bool JSonValue::is(JSonType t){
+        return mType == t;
+    }
+
+    bool JSonValue::is(JSonType t) const{
         return mType == t;
     }
 
@@ -257,7 +260,6 @@ namespace engine{ namespace json {
         return serial;
     }
 
-
     JSonValue& JSonValue::getKey(const std::string key, bool createMissingKey){
         if (mType == JSonType_Object || mType == JSonType_Array){
             std::string head = "";
@@ -341,15 +343,161 @@ namespace engine{ namespace json {
         throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
     }
 
-    JSonValue& JSonValue::getKey(const char* key, bool createMissingKey){
-        try{
-            return getKey(std::string(key, createMissingKey));
-        } catch (std::out_of_range e){
-            throw e;
-        } catch (std::runtime_error e){
-            throw e;
+    JSonValue& JSonValue::getKey(const std::string key) const{
+        if (mType == JSonType_Object || mType == JSonType_Array){
+            std::string head = "";
+            std::string tail = "";
+
+            auto _stoui = [](std::string s){
+                // NOTE: This lambda should NOT be needed. std::stoi() should do the job, but it seems
+                // to be missing in MinGW. Until I come up with a more elegant way to deal with that issue,
+                // this lambda will exist.
+                std::istringstream ss(s);
+                size_t res;
+                return ss >> res ? res : throw std::invalid_argument("String is not a number.");
+            };
+            if (JSonValue::Key_Separator != "")
+                SplitKey(key, head, tail);
+            else head = key;
+
+            if (mType == JSonType_Object){
+                JSonObjectIter i = mObject->find(head);
+                if (i != mObject->end()){
+                    if (tail != ""){
+                        try{
+                            return i->second.getKey(tail);
+                        } catch (std::out_of_range e){
+                            throw e;
+                        } catch (std::runtime_error e){
+                            throw e;
+                        }
+                    }
+                    return (*mObject)[head];
+                }
+                throw std::out_of_range(std::string("Unable to locate resource from key segment \"") + key + std::string("\"."));
+
+            } else if (mType == JSonType_Array){
+                if (head[0] == '#'){
+                    size_t index = 0;
+                    try {index = _stoui(head.substr(1, head.length()));} catch (std::invalid_argument e){
+                        throw std::invalid_argument("Key segment expected to be an array index.");
+                    }
+
+                    if (index < mArray->size()){
+                        if (tail != ""){
+                            return mArray->at(index)->getKey(tail);
+                        }
+                        return *(mArray->at(index));
+                    }
+                    std::out_of_range("Key to index value out of range of the JSonArray object.");
+                } else if (head == "+" && tail == ""){ // A special case for growing an array without having to dig into the DOM for it.
+                    mArray->push_back(JSonValuePtr(new JSonValue()));
+                    return *(mArray->at(mArray->size()-1));
+                }
+                std::runtime_error(std::string("Key segment \"") + key + std::string("\" does not begin with array access key format."));
+            }
         }
+        throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
     }
+
+    JSonValue& JSonValue::getKey(const char* key, bool createMissingKey){
+        try{return getKey(std::string(key, createMissingKey));}
+        catch (std::out_of_range e){throw e;}
+        catch (std::runtime_error e){throw e;}
+    }
+
+    JSonValue& JSonValue::getKey(const char* key) const{
+        try{return getKey(std::string(key));}
+        catch (std::out_of_range e){throw e;}
+        catch (std::runtime_error e){throw e;}
+    }
+
+    JSonValue& JSonValue::getAt(size_t index){
+        if (mType == JSonType_Array){
+            if (index < mArray->size())
+                return *(mArray->at(index));
+            std::out_of_range("Index value out of range.");
+        }
+        std::runtime_error("JSonValue is not a JSonType_Array type.");
+    }
+
+    JSonValue& JSonValue::getAt(size_t index) const{
+        if (mType == JSonType_Array){
+            if (index < mArray->size())
+                return *(mArray->at(index));
+            std::out_of_range("Index value out of range.");
+        }
+        std::runtime_error("JSonValue is not a JSonType_Array type.");
+    }
+
+    void JSonValue::removeKey(const std::string key){
+        if (mType == JSonType_Object || mType == JSonType_Array){
+            std::string head = "";
+            std::string tail = "";
+
+            auto _stoui = [](std::string s){
+                // NOTE: This lambda should NOT be needed. std::stoi() should do the job, but it seems
+                // to be missing in MinGW. Until I come up with a more elegant way to deal with that issue,
+                // this lambda will exist.
+                std::istringstream ss(s);
+                size_t res;
+                return ss >> res ? res : throw std::invalid_argument("String is not a number.");
+            };
+            if (JSonValue::Key_Separator != "")
+                SplitKey(key, head, tail);
+            else head = key;
+
+            if (mType == JSonType_Object){
+                JSonObjectIter i = mObject->find(head);
+                if (i != mObject->end()){
+                    if (tail != ""){
+                        try{i->second.removeKey(tail);}
+                        catch (std::out_of_range e){throw e;}
+                        catch (std::runtime_error e){throw e;}
+                    } else {
+                        mObject->erase(i);
+                    }
+                } else
+                    throw std::out_of_range(std::string("Unable to locate resource from key segment \"") + key + std::string("\"."));
+
+            } else if (mType == JSonType_Array){
+                if (head[0] == '#'){
+                    size_t index = 0;
+                    try {index = _stoui(head.substr(1, head.length()));} catch (std::invalid_argument e){
+                        throw std::invalid_argument("Key segment expected to be an array index.");
+                    }
+
+                    if (index < mArray->size()){
+                        if (tail != ""){
+                            mArray->at(index)->removeKey(tail);
+                        } else {
+                            removeAt(index);
+                        }
+                    } else
+                        std::out_of_range("Key to index value out of range of the JSonArray object.");
+                } else
+                    std::runtime_error(std::string("Key segment \"") + key + std::string("\" does not begin with array access key format."));
+            }
+        } else
+            throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
+    }
+
+    void JSonValue::removeKey(const char* key){
+        removeKey(std::string(key));
+    }
+
+    void JSonValue::removeAt(size_t index){
+        if (mType == JSonType_Array){
+            if (index < mArray->size()){
+                JSonArrayIter i = mArray->begin();
+                for (;index > 0; index--)
+                    i++;
+                mArray->erase(i);
+            }
+        } else
+            throw std::runtime_error("JSonValue is not a JSonType_Array type.");
+    }
+
 
     bool JSonValue::hasKey(const std::string key){
         try{
@@ -365,8 +513,26 @@ namespace engine{ namespace json {
         return true;
     }
 
+    bool JSonValue::hasKey(const std::string key) const{
+        try{
+            // If it doesn't throw an exception, the key exists!
+            getKey(key);
+        } catch (std::out_of_range e){
+            return false;
+        } catch (std::invalid_argument e){
+            return false;
+        } catch (std::runtime_error e){
+            return false;
+        }
+        return true;
+    }
+
 
     bool JSonValue::hasKey(const char* key){
+        return hasKey(std::string(key));
+    }
+
+    bool JSonValue::hasKey(const char* key) const {
         return hasKey(std::string(key));
     }
 
@@ -433,10 +599,36 @@ namespace engine{ namespace json {
         throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
     }
 
+    JSonValue& JSonValue::operator[](const std::string& key) const{
+        if (mType == JSonType_Object || mType == JSonType_Array){
+            try {
+                return getKey(key);
+            } catch (std::out_of_range e){
+                throw e;
+            } catch (std::runtime_error e){
+                throw e;
+            }
+        }
+        throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
+    }
+
     JSonValue& JSonValue::operator[](const char* key){
         if (mType == JSonType_Object || mType == JSonType_Array){
             try{
                 return getKey(std::string(key), mType == JSonType_Object ? true : false);
+            } catch (std::out_of_range e){
+                throw e;
+            } catch (std::runtime_error e){
+                throw e;
+            }
+        }
+        throw std::runtime_error("JSonValue must be a JSonType_Object or JSonType_Array.");
+    }
+
+    JSonValue& JSonValue::operator[](const char* key) const{
+        if (mType == JSonType_Object || mType == JSonType_Array){
+            try{
+                return getKey(std::string(key));
             } catch (std::out_of_range e){
                 throw e;
             } catch (std::runtime_error e){
@@ -454,6 +646,12 @@ namespace engine{ namespace json {
             throw std::out_of_range("Index exceeds size of JSonArray.");
         }
         throw std::runtime_error("JSonValue is not a JSonType_Array.");
+    }
+    JSonValue& JSonValue::operator[](const size_t index) const{
+        try{
+            return operator[](index);
+        } catch (std::out_of_range e){throw e;}
+        catch (std::runtime_error e){throw e;}
     }
 
 
@@ -726,7 +924,7 @@ PRIVATE METHODS BELOW THIS POINT
         return serial;
     }
 
-    void JSonValue::SplitKey(const std::string key, std::string &head, std::string &tail){
+    void JSonValue::SplitKey(const std::string key, std::string &head, std::string &tail) const{
         //std::string delimiter(":");
         size_t pos = key.find(JSonValue::Key_Separator);
         if (pos != std::string::npos){

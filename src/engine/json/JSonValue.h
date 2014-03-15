@@ -1,7 +1,6 @@
 #ifndef JSONVALUE_H
 #define JSONVALUE_H
 
-
 /*
 * The MIT License (MIT)
 *
@@ -29,7 +28,6 @@
 
 #include <algorithm>
 #include <memory>
-
 #include <sstream>
 
 #include <string>
@@ -75,6 +73,7 @@ namespace engine{ namespace json {
             ~JSonValue();
 
             bool is(JSonType t);
+            bool is(JSonType t) const;
             JSonType type();
             const JSonType type() const;
             std::string type_str();
@@ -92,9 +91,19 @@ namespace engine{ namespace json {
 
             JSonValue& getKey(const std::string key, bool createMissingKey=false);
             JSonValue& getKey(const char* key, bool createMissingKey=false);
+            JSonValue& getKey(const std::string key) const;
+            JSonValue& getKey(const char* key) const;
+            JSonValue& getAt(size_t index);
+            JSonValue& getAt(size_t index) const;
 
             bool hasKey(const std::string key);
+            bool hasKey(const std::string key) const;
             bool hasKey(const char* key);
+            bool hasKey(const char* key) const;
+
+            void removeKey(const std::string key);
+            void removeKey(const char* key);
+            void removeAt(size_t index);
 
             /**
             * Returns the data size or length in elements or bytes.
@@ -120,6 +129,10 @@ namespace engine{ namespace json {
             JSonValue& operator[](const std::string& key);
             JSonValue& operator[](const char* key);
             JSonValue& operator[](const size_t index);
+
+            JSonValue& operator[](const std::string& key) const;
+            JSonValue& operator[](const char* key) const;
+            JSonValue& operator[](const size_t index) const;
 
             JSonValue& operator=(const JSonValue &rhs);
             JSonValue& operator=(JSonObjectPtr rhs);
@@ -196,6 +209,7 @@ namespace engine{ namespace json {
             static JSonValue Array();
 
             static JSonValue ParseFromString(const std::string &jsonstr);
+            static JSonValue ParseFromString(const char* jsonstr);
             static JSonValue ParseFromFile(const std::string &src);
 
         protected:
@@ -212,7 +226,7 @@ namespace engine{ namespace json {
 
         private:
             std::string Serialize_str(const std::string& s);
-            void SplitKey(const std::string key, std::string &head, std::string &tail);
+            void SplitKey(const std::string key, std::string &head, std::string &tail) const;
             void ClearObjectsOrArrays();
     };
 
